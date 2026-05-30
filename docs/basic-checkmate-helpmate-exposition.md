@@ -166,7 +166,9 @@ For the rook endgames with a black defender, the corrected classification also
 records local roots outside the fixed material-preserving graph: KRvKB(light)
 has 8 White-to-move states where White captures the bishop and reduces to KRvK;
 KRvKN has 8 already-ended White-to-move states and 24 states where White
-captures the knight and reduces to KRvK. The nonzero rows in the table are best
+captures the knight and reduces to KRvK. The tests replay each such White
+capture with Ashlar's legal move generator and then check that the resulting
+KRvK position is a verified helpmate root for White. The nonzero rows in the table are best
 read as a todo list for strict-legality classification before making a
 game-reachable white-to-move statement.
 

@@ -110,6 +110,7 @@ final class BasicRookLightBishopHelpMateAnalysis {
     var stalemateStateCount = 0;
     var counterexampleStateCount = 0;
     final NavigableSet<RookLightBishopState> unwinnableWhiteToMoveRepresentatives = new TreeSet<>();
+    final NavigableSet<RookLightBishopState> reducibleWhiteToMoveStates = new TreeSet<>();
     final NavigableSet<RookLightBishopState> forcedRookCaptureRepresentatives = new TreeSet<>();
     final NavigableSet<RookLightBishopState> stalemateRepresentatives = new TreeSet<>();
     final NavigableSet<RookLightBishopState> counterexampleRepresentatives = new TreeSet<>();
@@ -127,6 +128,7 @@ final class BasicRookLightBishopHelpMateAnalysis {
           endedWhiteToMoveStateCount++;
         } else if (hasWhiteCaptureToWinningRookEndgame(whiteKing, whiteRook, blackKing, blackBishop)) {
           reducibleWhiteToMoveStateCount++;
+          reducibleWhiteToMoveStates.add(toState(state));
         } else {
           unwinnableWhiteToMoveStateCount++;
           unwinnableWhiteToMoveRepresentatives.add(canonical(toState(state)));
@@ -157,7 +159,7 @@ final class BasicRookLightBishopHelpMateAnalysis {
     return new AnalysisResult(legalStateCount, whiteToMoveStateCount, blackToMoveStateCount, blackCheckmateCount,
         blackToMoveInCheckStateCount, blackToMoveStateCount - blackToMoveInCheckStateCount,
         endedWhiteToMoveStateCount, reducibleWhiteToMoveStateCount, unwinnableWhiteToMoveStateCount,
-        unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
+        reducibleWhiteToMoveStates, unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
         blackToMoveStateCount - blackCheckmateCount - stalemateStateCount, forcedRookCaptureStateCount,
         forcedRookCaptureRepresentatives, stalemateStateCount, stalemateRepresentatives, counterexampleStateCount,
         counterexampleRepresentatives);
@@ -714,6 +716,7 @@ final class BasicRookLightBishopHelpMateAnalysis {
   record AnalysisResult(int legalStateCount, int whiteToMoveStateCount, int blackToMoveStateCount,
       int blackCheckmateCount, int blackToMoveInCheckStateCount, int blackToMoveNotInCheckStateCount,
       int endedWhiteToMoveStateCount, int reducibleWhiteToMoveStateCount, int unwinnableWhiteToMoveStateCount,
+      Set<RookLightBishopState> reducibleWhiteToMoveStates,
       Set<RookLightBishopState> unwinnableWhiteToMoveRepresentatives, int winningStateCount,
       int ongoingBlackToMoveStateCount, int forcedRookCaptureStateCount,
       Set<RookLightBishopState> forcedRookCaptureRepresentatives, int stalemateStateCount,
@@ -721,6 +724,7 @@ final class BasicRookLightBishopHelpMateAnalysis {
       Set<RookLightBishopState> counterexampleRepresentatives) {
 
     AnalysisResult {
+      reducibleWhiteToMoveStates = Collections.unmodifiableSet(new TreeSet<>(reducibleWhiteToMoveStates));
       unwinnableWhiteToMoveRepresentatives = canonicalRepresentatives(unwinnableWhiteToMoveRepresentatives);
       forcedRookCaptureRepresentatives = canonicalRepresentatives(forcedRookCaptureRepresentatives);
       stalemateRepresentatives = canonicalRepresentatives(stalemateRepresentatives);

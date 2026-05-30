@@ -113,6 +113,7 @@ final class BasicRookKnightHelpMateAnalysis {
     var stalemateStateCount = 0;
     var counterexampleStateCount = 0;
     final NavigableSet<RookKnightState> unwinnableWhiteToMoveRepresentatives = new TreeSet<>();
+    final NavigableSet<RookKnightState> reducibleWhiteToMoveStates = new TreeSet<>();
     final NavigableSet<RookKnightState> forcedRookCaptureRepresentatives = new TreeSet<>();
     final NavigableSet<RookKnightState> stalemateRepresentatives = new TreeSet<>();
     final NavigableSet<RookKnightState> counterexampleRepresentatives = new TreeSet<>();
@@ -130,6 +131,7 @@ final class BasicRookKnightHelpMateAnalysis {
           endedWhiteToMoveStateCount++;
         } else if (hasWhiteCaptureToWinningRookEndgame(whiteKing, whiteRook, blackKing, blackKnight)) {
           reducibleWhiteToMoveStateCount++;
+          reducibleWhiteToMoveStates.add(toState(state));
         } else {
           unwinnableWhiteToMoveStateCount++;
           unwinnableWhiteToMoveRepresentatives.add(canonical(toState(state)));
@@ -160,7 +162,7 @@ final class BasicRookKnightHelpMateAnalysis {
     return new AnalysisResult(legalStateCount, whiteToMoveStateCount, blackToMoveStateCount, blackCheckmateCount,
         blackToMoveInCheckStateCount, blackToMoveStateCount - blackToMoveInCheckStateCount,
         endedWhiteToMoveStateCount, reducibleWhiteToMoveStateCount, unwinnableWhiteToMoveStateCount,
-        unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
+        reducibleWhiteToMoveStates, unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
         blackToMoveStateCount - blackCheckmateCount - stalemateStateCount, forcedRookCaptureStateCount,
         forcedRookCaptureRepresentatives, stalemateStateCount, stalemateRepresentatives, counterexampleStateCount,
         counterexampleRepresentatives);
@@ -702,13 +704,15 @@ final class BasicRookKnightHelpMateAnalysis {
   record AnalysisResult(int legalStateCount, int whiteToMoveStateCount, int blackToMoveStateCount,
       int blackCheckmateCount, int blackToMoveInCheckStateCount, int blackToMoveNotInCheckStateCount,
       int endedWhiteToMoveStateCount, int reducibleWhiteToMoveStateCount, int unwinnableWhiteToMoveStateCount,
-      Set<RookKnightState> unwinnableWhiteToMoveRepresentatives, int winningStateCount,
+      Set<RookKnightState> reducibleWhiteToMoveStates, Set<RookKnightState> unwinnableWhiteToMoveRepresentatives,
+      int winningStateCount,
       int ongoingBlackToMoveStateCount, int forcedRookCaptureStateCount,
       Set<RookKnightState> forcedRookCaptureRepresentatives, int stalemateStateCount,
       Set<RookKnightState> stalemateRepresentatives, int counterexampleStateCount,
       Set<RookKnightState> counterexampleRepresentatives) {
 
     AnalysisResult {
+      reducibleWhiteToMoveStates = Collections.unmodifiableSet(new TreeSet<>(reducibleWhiteToMoveStates));
       unwinnableWhiteToMoveRepresentatives = canonicalRepresentatives(unwinnableWhiteToMoveRepresentatives);
       forcedRookCaptureRepresentatives = canonicalRepresentatives(forcedRookCaptureRepresentatives);
       stalemateRepresentatives = canonicalRepresentatives(stalemateRepresentatives);

@@ -224,7 +224,9 @@ records non-exceptional local roots outside the fixed material-preserving graph:
 `KRvKB(light bishop)` has 8 White-to-move states where White captures the bishop
 and reduces to the verified `KRvK` case; `KRvKN` has 8 already-ended
 White-to-move states and 24 states where White captures the knight and reduces
-to `KRvK`.
+to `KRvK`. The tests replay each such White capture with Ashlar's legal move
+generator and then check that the resulting `KRvK` position is a verified
+helpmate root for White.
 
 ## Strict-Legality Seed Checks
 
