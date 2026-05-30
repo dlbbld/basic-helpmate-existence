@@ -8,6 +8,73 @@ ordinary legal move generator; this project owns the finite material-class
 reachability analyses, independent witness verifiers, seed-legality checks, and
 the accompanying exposition.
 
+## Central Results
+
+This project delivers a finite-state proof for the following black-to-move
+statement.
+
+For each material class below, every strictly game-legal, ongoing position with
+Black to move has a helpmate for White, unless Black is forced to capture
+White's mating material on the first move.
+
+| Material class | Statement |
+|---|---|
+| `KRvK` | White has a helpmate unless every legal Black move captures the rook. |
+| `KQvK` | White has a helpmate unless every legal Black move captures the queen. |
+| `KBBvK`, opposite bishops | White has a helpmate unless every legal Black move captures a bishop. |
+| `KBNvK`, light bishop | White has a helpmate unless every legal Black move captures the bishop or knight. |
+| `KRvKB(light bishop)` | White has a helpmate unless every legal Black move captures the rook. |
+| `KRvKN` | White has a helpmate unless every legal Black move captures the rook. |
+
+"Ongoing" excludes positions that are already checkmate or stalemate. The
+statement is cooperative: a helpmate means that there exists some legal
+continuation to Black checkmate, not that White can force mate against best
+defense.
+
+The local graph contains one apparent black-to-move exception in
+`KBNvK(light bishop)`, represented by:
+
+```text
+8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1
+```
+
+That position is retro-illegal and therefore cannot arise in a real chess game.
+
+The same computation also classifies White-to-move roots. For `KRvK` and
+`KQvK`, every locally legal White-to-move position has a helpmate. The remaining
+classes have local White-to-move no-helpmate positions. One representative per
+board-symmetry class is:
+
+| Material class | Representative FEN | Strict-game status |
+|---|---|---|
+| `KBBvK`, opposite bishops | `8/8/8/8/8/B7/B7/k1K5 w - - 0 1` | not yet classified |
+| `KBBvK`, opposite bishops | `8/8/8/8/8/8/B1K5/k1B5 w - - 0 1` | not yet classified |
+| `KBBvK`, opposite bishops | `8/8/8/8/8/B7/B1K5/k7 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/B7/k1KN4 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/BN6/k1K5 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/3N4/B7/k1K5 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/N7/8/B7/k1K5 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/2N5/8/B7/k1K5 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/2K5/kB1N4 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/1NK5/kB6 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/3N4/2K5/kB6 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/N7/8/2K5/kB6 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/2N5/8/2K5/kB6 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/B1K5/k2N4 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/8/BNK5/k7 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/8/3N4/B1K5/k7 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/N7/8/B1K5/k7 w - - 0 1` | not yet classified |
+| `KBNvK`, light bishop | `8/8/8/8/2N5/8/B1K5/k7 w - - 0 1` | not yet classified |
+| `KRvKB(light bishop)` | `8/8/8/8/8/6k1/6b1/6RK w - - 0 1` | not yet classified |
+| `KRvKB(light bishop)` | `8/8/8/8/8/7k/6b1/6RK w - - 0 1` | not yet classified |
+| `KRvKN` | `8/8/8/8/8/k7/2n5/KR6 w - - 0 1` | not yet classified |
+| `KRvKN` | `8/8/8/8/8/kn6/8/KR6 w - - 0 1` | not yet classified |
+| `KRvKN` | `8/8/8/8/8/1k6/n7/RK6 w - - 0 1` | not yet classified |
+| `KRvKN` | `8/8/8/8/8/2k5/n7/RK6 w - - 0 1` | not yet classified |
+
+The next retro-legality task is to decide, for each row in this table, whether
+the represented local position can arise from an ordinary chess game.
+
 ## Motivation
 
 In chess, the FIDE dead-position rule asks whether checkmate is possible by any
