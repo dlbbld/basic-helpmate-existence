@@ -168,9 +168,13 @@ game-reachable white-to-move statement.
 
 The KBNvK computation found one canonical local counterexample:
 
+<a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&amp;pov=black" alt="8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1" width="240"></a>
+
 ```text
 8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1
 ```
+
+[Open this position on Lichess](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1).
 
 The pieces are White king `c2`, White bishop `b1`, White knight `c4`, Black king `a2`, Black to move. There are four symmetric local states of this type.
 

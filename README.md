@@ -31,12 +31,11 @@ statement is cooperative: a helpmate means that there exists some legal
 continuation to Black checkmate, not that White can force mate against best
 defense.
 
-The local graph contains one apparent black-to-move exception in
-`KBNvK(light bishop)`, represented by:
+The local graph contains one apparent black-to-move exception:
 
-```text
-8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1
-```
+| Material class | Representative position | Strict-game status |
+|---|---|---|
+| `KBNvK(light bishop)` | <a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&amp;pov=black" alt="8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1" width="180"></a><br>`8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) | retro-illegal |
 
 That position is retro-illegal and therefore cannot arise in a real chess game.
 
@@ -45,32 +44,32 @@ The same computation also classifies White-to-move roots. For `KRvK` and
 classes have local White-to-move no-helpmate positions. One representative per
 board-symmetry class is:
 
-| Material class | Representative FEN | Strict-game status |
+| Material class | Representative position | Strict-game status |
 |---|---|---|
-| `KBBvK`, opposite bishops | `8/8/8/8/8/B7/B7/k1K5 w - - 0 1` | not yet classified |
-| `KBBvK`, opposite bishops | `8/8/8/8/8/8/B1K5/k1B5 w - - 0 1` | not yet classified |
-| `KBBvK`, opposite bishops | `8/8/8/8/8/B7/B1K5/k7 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/B7/k1KN4 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/BN6/k1K5 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/3N4/B7/k1K5 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/N7/8/B7/k1K5 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/2N5/8/B7/k1K5 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/2K5/kB1N4 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/1NK5/kB6 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/3N4/2K5/kB6 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/N7/8/2K5/kB6 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/2N5/8/2K5/kB6 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/B1K5/k2N4 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/8/BNK5/k7 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/8/3N4/B1K5/k7 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/N7/8/B1K5/k7 w - - 0 1` | not yet classified |
-| `KBNvK`, light bishop | `8/8/8/8/2N5/8/B1K5/k7 w - - 0 1` | not yet classified |
-| `KRvKB(light bishop)` | `8/8/8/8/8/6k1/6b1/6RK w - - 0 1` | not yet classified |
-| `KRvKB(light bishop)` | `8/8/8/8/8/7k/6b1/6RK w - - 0 1` | not yet classified |
-| `KRvKN` | `8/8/8/8/8/k7/2n5/KR6 w - - 0 1` | not yet classified |
-| `KRvKN` | `8/8/8/8/8/kn6/8/KR6 w - - 0 1` | not yet classified |
-| `KRvKN` | `8/8/8/8/8/1k6/n7/RK6 w - - 0 1` | not yet classified |
-| `KRvKN` | `8/8/8/8/8/2k5/n7/RK6 w - - 0 1` | not yet classified |
+| `KBBvK, opposite bishops` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/B7/B7/k1K5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/B7/B7/k1K5 w - - 0 1" width="180"></a><br>`8/8/8/8/8/B7/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1) | not yet classified |
+| `KBBvK, opposite bishops` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k1B5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/B1K5/k1B5 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/B1K5/k1B5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1) | not yet classified |
+| `KBBvK, opposite bishops` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/B7/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/B7/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/8/B7/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/B7/k1KN4%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/B7/k1KN4 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/B7/k1KN4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/BN6/k1K5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/BN6/k1K5 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/BN6/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B7/k1K5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/3N4/B7/k1K5 w - - 0 1" width="180"></a><br>`8/8/8/8/8/3N4/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/N7/8/B7/k1K5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/N7/8/B7/k1K5 w - - 0 1" width="180"></a><br>`8/8/8/8/N7/8/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B7/k1K5%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/2N5/8/B7/k1K5 w - - 0 1" width="180"></a><br>`8/8/8/8/2N5/8/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/2K5/kB1N4%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/2K5/kB1N4 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/2K5/kB1N4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/1NK5/kB6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/1NK5/kB6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/1NK5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/3N4/2K5/kB6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/3N4/2K5/kB6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/3N4/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/N7/8/2K5/kB6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/N7/8/2K5/kB6 w - - 0 1" width="180"></a><br>`8/8/8/8/N7/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/2K5/kB6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/2N5/8/2K5/kB6 w - - 0 1" width="180"></a><br>`8/8/8/8/2N5/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k2N4%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/B1K5/k2N4 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/B1K5/k2N4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/8/BNK5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/8/BNK5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/8/8/BNK5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/3N4/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/8/3N4/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/N7/8/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/N7/8/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/N7/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1) | not yet classified |
+| `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/2N5/8/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/2N5/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1) | not yet classified |
+| `KRvKB(light bishop)` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/6k1/6b1/6RK_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/6k1/6b1/6RK%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/6k1/6b1/6RK w - - 0 1" width="180"></a><br>`8/8/8/8/8/6k1/6b1/6RK w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/6k1/6b1/6RK_w_-_-_0_1) | not yet classified |
+| `KRvKB(light bishop)` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/7k/6b1/6RK_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/7k/6b1/6RK%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/7k/6b1/6RK w - - 0 1" width="180"></a><br>`8/8/8/8/8/7k/6b1/6RK w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/7k/6b1/6RK_w_-_-_0_1) | not yet classified |
+| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/k7/2n5/KR6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/k7/2n5/KR6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/k7/2n5/KR6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/k7/2n5/KR6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/k7/2n5/KR6_w_-_-_0_1) | not yet classified |
+| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/kn6/8/KR6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/kn6/8/KR6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/kn6/8/KR6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/kn6/8/KR6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/kn6/8/KR6_w_-_-_0_1) | not yet classified |
+| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/1k6/n7/RK6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/1k6/n7/RK6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/1k6/n7/RK6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/1k6/n7/RK6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/1k6/n7/RK6_w_-_-_0_1) | not yet classified |
+| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/2k5/n7/RK6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/2k5/n7/RK6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/2k5/n7/RK6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/2k5/n7/RK6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/2k5/n7/RK6_w_-_-_0_1) | not yet classified |
 
 The next retro-legality task is to decide, for each row in this table, whether
 the represented local position can arise from an ordinary chess game.
@@ -93,11 +92,13 @@ below is a counterexample to the naive local theorem: Black is not forced to
 capture a white piece on the first move, but White still has no
 material-preserving cooperative path to checkmate.
 
-![KBNvK retro-illegal exception](docs/assets/kbn-retro-illegal.svg)
+<a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&amp;pov=black" alt="8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1" width="240"></a>
 
 ```text
 8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1
 ```
+
+[Open this position on Lichess](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1).
 
 The catch is that this position is not strictly legal. Black is in check from
 the bishop on `b1`. If the position had arisen in a legal game, White's last

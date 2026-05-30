@@ -37,20 +37,24 @@ public class GenerateWhiteToMoveReachabilitySummary {
         rookKnight.unwinnableWhiteToMoveRepresentatives().size());
 
     System.out.println();
-    System.out.println("| Material class | Representative FEN | Strict-game status |");
+    System.out.println("Black-to-move local exception:");
+    printPositionRow("KBNvK(light bishop)", "8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1", "retro-illegal");
+
+    System.out.println();
+    System.out.println("| Material class | Representative position | Strict-game status |");
     System.out.println("|---|---|---|");
 
     for (final var state : oppositeBishops.unwinnableWhiteToMoveRepresentatives()) {
-      System.out.println("| `KBBvK`, opposite bishops | `" + toFen(state) + "` | not yet classified |");
+      printPositionRow("KBBvK, opposite bishops", toFen(state), "not yet classified");
     }
     for (final var state : lightBishopKnight.unwinnableWhiteToMoveRepresentatives()) {
-      System.out.println("| `KBNvK`, light bishop | `" + toFen(state) + "` | not yet classified |");
+      printPositionRow("KBNvK, light bishop", toFen(state), "not yet classified");
     }
     for (final var state : rookLightBishop.unwinnableWhiteToMoveRepresentatives()) {
-      System.out.println("| `KRvKB(light bishop)` | `" + toFen(state) + "` | not yet classified |");
+      printPositionRow("KRvKB(light bishop)", toFen(state), "not yet classified");
     }
     for (final var state : rookKnight.unwinnableWhiteToMoveRepresentatives()) {
-      System.out.println("| `KRvKN` | `" + toFen(state) + "` | not yet classified |");
+      printPositionRow("KRvKN", toFen(state), "not yet classified");
     }
   }
 
@@ -58,6 +62,25 @@ public class GenerateWhiteToMoveReachabilitySummary {
       int canonicalUnwinnableWhiteToMoveStates) {
     System.out.printf("%s: white-to-move states %,d, unwinnable %,d, canonical %,d%n", materialClass,
         whiteToMoveStates, unwinnableWhiteToMoveStates, canonicalUnwinnableWhiteToMoveStates);
+  }
+
+  private static void printPositionRow(String materialClass, String fen, String strictGameStatus) {
+    final String analysisUrl = lichessAnalysisUrl(fen);
+    final String imageUrl = chessvisionImageUrl(fen);
+    System.out.println("| `" + materialClass + "` | <a href=\"" + analysisUrl + "\"><img src=\""
+        + imageUrl.replace("&", "&amp;") + "\" alt=\"" + fen
+        + "\" width=\"180\"></a><br>`" + fen + "`<br>[Lichess analysis](" + analysisUrl + ") | "
+        + strictGameStatus + " |");
+  }
+
+  private static String lichessAnalysisUrl(String fen) {
+    return "https://lichess.org/analysis/standard/" + fen.strip().replace(' ', '_');
+  }
+
+  private static String chessvisionImageUrl(String fen) {
+    final String sideToMove = fen.split(" ")[1].equals("w") ? "white" : "black";
+    return "https://fen2image.chessvision.ai/" + fen.strip().replace(" ", "%20") + "?turn=" + sideToMove
+        + "&pov=" + sideToMove;
   }
 
   private static String toFen(BasicOppositeBishopsHelpMateAnalysis.OppositeBishopsState state) {
