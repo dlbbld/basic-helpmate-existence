@@ -9,7 +9,7 @@ Draft, 20 May 2026
 
 FIDE's dead-position rule is phrased in terms of existence: a position is dead if neither player can checkmate the opponent by any possible series of legal moves. This is the right chess rule, but it is not a small local material rule. Miguel Ambrona's Chess Helpmate Analyzer (CHA) gives a practical and sound approach to the problem by searching for helpmate sequences and by recognizing large classes of unwinnable positions statically. In high-level implementations, however, some elementary endgames can still be annoying: the position is obviously part of a classical mating material class, but a blind helpmate search may need to discover a long cooperative line.
 
-This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether White has a cooperative continuation to checkmate. The resulting statement is intentionally modest and useful: for Black to move, excluding positions that are already checkmate or stalemate, if Black has at least one first move that does not immediately capture a mating piece, then White has a helpmate. The statement was checked for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The same computation also classifies white-to-move roots: KRvK, KQvK, KRvKB(light), and KRvKN have no ongoing local white-to-move exceptions once White captures of Black's defender are allowed to reduce to KRvK; KBBvK and KBNvK retain small local exception sets whose strict-game legality remains to be classified.
+This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether White has a cooperative continuation to checkmate. The resulting black-to-move statement is intentionally modest and useful: excluding positions that are already checkmate or stalemate, if Black has at least one first move that does not immediately capture a mating piece, then White has a helpmate. The statement was checked for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The same computation also supports the white-to-move statement: every strictly game-legal, ongoing white-to-move position in these classes has a helpmate for White. The remaining local white-to-move exception representatives in KBBvK and KBNvK are retro-illegal by a last-move argument.
 
 ## 1. Motivation
 
@@ -101,8 +101,8 @@ move that captures Black's bishop or knight is not an obstruction: it reduces
 the position to the already verified KRvK case. With these distinctions, KRvK,
 KQvK, KRvKB(light), and KRvKN have no ongoing local white-to-move exceptions.
 KBBvK and KBNvK retain small local exception sets. Those exceptions are not part
-of the black-to-move theorem, and they should not be interpreted as strict game
-exceptions until a retro-legality classification has been completed.
+of the black-to-move theorem, and they are not strict game exceptions: their
+canonical representatives are retro-illegal by a last-move black-king argument.
 
 ## 6. Why a direct proof is difficult
 
@@ -168,9 +168,18 @@ has 8 White-to-move states where White captures the bishop and reduces to KRvK;
 KRvKN has 8 already-ended White-to-move states and 24 states where White
 captures the knight and reduces to KRvK. The tests replay each such White
 capture with Ashlar's legal move generator and then check that the resulting
-KRvK position is a verified helpmate root for White. The nonzero rows in the table are best
-read as a todo list for strict-legality classification before making a
-game-reachable white-to-move statement.
+KRvK position is a verified helpmate root for White.
+
+The nonzero KBBvK and KBNvK rows are local artifacts, not strict-game
+exceptions. In their canonical representatives, Black's king is on `a1` and
+White is to move, so Black's previous move would have had to be a king move to
+`a1`. For the KBBvK representatives, `b1` and `b2` are ruled out by king
+adjacency and the only remaining predecessor square `a2` is occupied by a white
+bishop. For the KBNvK representatives with a bishop on `a2`, the same occupied
+predecessor argument applies. For those with a bishop on `b1`, `b1` is
+occupied, `b2` is adjacent to the white king, and `a2` is attacked by the
+bishop. Thus none of the canonical representatives has a legal black last move,
+and symmetries preserve that conclusion.
 
 ## 9. The KBNvK retro-illegal exception
 
@@ -223,6 +232,11 @@ For a paper-quality claim, the artifact should include:
 Once this is done, the core contribution can be stated cleanly:
 
 > In the tested basic and near-basic mating material classes, cooperative reachability to checkmate is guaranteed from every ongoing black-to-move position except where Black is immediately forced to capture the mating material. The only KBNvK local exception is retro-illegal and therefore irrelevant to positions that can arise in a game.
+
+The matching white-to-move conclusion is: every strictly game-legal, ongoing
+white-to-move position in the same material classes is winnable for White. The
+only local white-to-move exceptions found by enumeration are retro-illegal and
+therefore outside the strict game domain.
 
 ## References
 

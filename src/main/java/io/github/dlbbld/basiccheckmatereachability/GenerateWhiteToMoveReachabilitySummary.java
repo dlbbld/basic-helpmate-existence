@@ -48,16 +48,16 @@ public class GenerateWhiteToMoveReachabilitySummary {
     System.out.println("|---|---|---|");
 
     for (final var state : oppositeBishops.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KBBvK, opposite bishops", toFen(state), "not yet classified");
+      printPositionRow("KBBvK, opposite bishops", toFen(state), "retro-illegal");
     }
     for (final var state : lightBishopKnight.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KBNvK, light bishop", toFen(state), "not yet classified");
+      printPositionRow("KBNvK, light bishop", toFen(state), "retro-illegal");
     }
     for (final var state : rookLightBishop.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KRvKB(light bishop)", toFen(state), "not yet classified");
+      printPositionRow("KRvKB(light bishop)", toFen(state), "unexpected local exception");
     }
     for (final var state : rookKnight.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KRvKN", toFen(state), "not yet classified");
+      printPositionRow("KRvKN", toFen(state), "unexpected local exception");
     }
   }
 
