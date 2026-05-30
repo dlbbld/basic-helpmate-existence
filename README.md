@@ -324,6 +324,35 @@ is simpler, faster, and produces the certificate edges needed by the verifier.
 The regression test `TestSyzygyCountCrossCheck` independently recomputes all
 counts in this section without calling the main reachability analyzers.
 
+Count agreement alone would still leave a theoretical worry: two different
+position sets can have the same size. For that reason the repository also
+contains an optional pointwise Syzygy probe:
+
+```sh
+python scripts/verify_syzygy_position_sets.py
+```
+
+The script generates one representative per relevant board-symmetry class and
+probes each representative against local Syzygy files with python-chess. It does
+not use the main reachability analyzers. On 30 May 2026, it was run against the
+local Syzygy files in `C:\Users\danie\git\python-chess\data\syzygy\regular`
+with these results:
+
+| Material class | Unique representatives probed |
+|---|---:|
+| `KRvK` | 50,015 |
+| `KQvK` | 46,137 |
+| `KBNvK(light bishop)` | 3,067,466 |
+| `KRvKB(light bishop)` | 2,827,104 |
+| `KRvKN` | 2,915,128 |
+| `KBBvK`, all ordered bishop slots | 2,978,430 |
+
+Every generated representative probed successfully. Together with the matching
+Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated
+local position sets are the Syzygy local position sets in the comparable
+quotient space. The opposite-coloured `KBBvK` theorem class is contained in the
+expanded all-bishop Syzygy probe.
+
 ## Strict-Legality Seed Checks
 
 The main reachability enumeration works with local legality. A separate
@@ -356,6 +385,7 @@ Implemented:
 - independent witness verifiers;
 - JUnit tests pinning all current counts;
 - Syzygy/NULP count cross-checks for the covered material classes;
+- optional pointwise Syzygy position-set probe script;
 - last-move retro-illegality classification for the local white-to-move
   exception representatives;
 - seed strict-legality checks for `KRvK`, `KQvK`, `KBNvK(light bishop)`, and

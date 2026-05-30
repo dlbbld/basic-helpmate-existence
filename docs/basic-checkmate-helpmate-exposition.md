@@ -209,6 +209,15 @@ This comparison is deliberately local, not strict-game retro-legal. The
 retro-illegal examples found in the artifact are still probeable in Syzygy,
 which is consistent with NULP legality and with our local enumeration.
 
+The artifact also includes an optional pointwise probe against local Syzygy
+files. It generates one representative per relevant symmetry class and probes
+each representative with python-chess. In a local run on 30 May 2026, every
+generated representative probed successfully for KRvK, KQvK, KBNvK(light),
+KRvKB(light), KRvKN, and the expanded all-bishop KBBvK Syzygy table. This is a
+stronger check than count equality alone: combined with matching unique counts,
+it verifies that the generated local position sets sit inside the corresponding
+Syzygy local position sets with the same cardinality.
+
 ## 9. The KBNvK retro-illegal exception
 
 The KBNvK computation found one canonical local counterexample:
