@@ -3,10 +3,36 @@ package io.github.dlbbld.basiccheckmatereachability;
 import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.QUEEN;
 import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.ROOK;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 
 public class GenerateWhiteToMoveReachabilitySummary {
+
+  private static final List<String> ORDERED_KBB_WHITE_TO_MOVE_EXCEPTIONS = List.of(
+      "8/8/8/8/8/B7/B7/k1K5 w - - 0 1",
+      "8/8/8/8/8/B7/B1K5/k7 w - - 0 1",
+      "8/8/8/8/8/8/B1K5/k1B5 w - - 0 1");
+
+  private static final List<String> ORDERED_KBN_WHITE_TO_MOVE_EXCEPTIONS = List.of(
+      "8/8/8/8/8/8/B7/k1KN4 w - - 0 1",
+      "8/8/8/8/8/3N4/B7/k1K5 w - - 0 1",
+      "8/8/8/8/2N5/8/B7/k1K5 w - - 0 1",
+      "8/8/8/8/N7/8/B7/k1K5 w - - 0 1",
+      "8/8/8/8/8/8/BN6/k1K5 w - - 0 1",
+      "8/8/8/8/8/8/2K5/kB1N4 w - - 0 1",
+      "8/8/8/8/8/3N4/2K5/kB6 w - - 0 1",
+      "8/8/8/8/2N5/8/2K5/kB6 w - - 0 1",
+      "8/8/8/8/N7/8/2K5/kB6 w - - 0 1",
+      "8/8/8/8/8/8/1NK5/kB6 w - - 0 1",
+      "8/8/8/8/8/8/B1K5/k2N4 w - - 0 1",
+      "8/8/8/8/8/3N4/B1K5/k7 w - - 0 1",
+      "8/8/8/8/2N5/8/B1K5/k7 w - - 0 1",
+      "8/8/8/8/N7/8/B1K5/k7 w - - 0 1",
+      "8/8/8/8/8/8/BNK5/k7 w - - 0 1");
 
   public static void main(String[] args) {
     final var rook = BasicMajorPieceHelpMateAnalysis.analyze(ROOK);
@@ -47,12 +73,10 @@ public class GenerateWhiteToMoveReachabilitySummary {
     System.out.println("| Material class | Representative position | Strict-game status |");
     System.out.println("|---|---|---|");
 
-    for (final var state : oppositeBishops.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KBBvK, opposite bishops", toFen(state), "retro-illegal");
-    }
-    for (final var state : lightBishopKnight.unwinnableWhiteToMoveRepresentatives()) {
-      printPositionRow("KBNvK, light bishop", toFen(state), "retro-illegal");
-    }
+    printOrderedPositionRows("KBBvK, opposite bishops", ORDERED_KBB_WHITE_TO_MOVE_EXCEPTIONS,
+        toOppositeBishopsFenSet(oppositeBishops.unwinnableWhiteToMoveRepresentatives()), "retro-illegal");
+    printOrderedPositionRows("KBNvK, light bishop", ORDERED_KBN_WHITE_TO_MOVE_EXCEPTIONS,
+        toLightBishopKnightFenSet(lightBishopKnight.unwinnableWhiteToMoveRepresentatives()), "retro-illegal");
     for (final var state : rookLightBishop.unwinnableWhiteToMoveRepresentatives()) {
       printPositionRow("KRvKB(light bishop)", toFen(state), "unexpected local exception");
     }
@@ -79,6 +103,34 @@ public class GenerateWhiteToMoveReachabilitySummary {
         + imageUrl.replace("&", "&amp;") + "\" alt=\"" + fen
         + "\" width=\"180\"></a><br>`" + fen + "`<br>[Lichess analysis](" + analysisUrl + ") | "
         + strictGameStatus + " |");
+  }
+
+  private static void printOrderedPositionRows(String materialClass, List<String> orderedFens, Set<String> actualFens,
+      String strictGameStatus) {
+    if (!actualFens.equals(new HashSet<>(orderedFens))) {
+      throw new IllegalStateException("ordered FEN list no longer matches " + materialClass);
+    }
+    for (final String fen : orderedFens) {
+      printPositionRow(materialClass, fen, strictGameStatus);
+    }
+  }
+
+  private static Set<String> toOppositeBishopsFenSet(
+      Set<BasicOppositeBishopsHelpMateAnalysis.OppositeBishopsState> states) {
+    final Set<String> result = new HashSet<>();
+    for (final var state : states) {
+      result.add(toFen(state));
+    }
+    return result;
+  }
+
+  private static Set<String> toLightBishopKnightFenSet(
+      Set<BasicLightBishopKnightHelpMateAnalysis.LightBishopKnightState> states) {
+    final Set<String> result = new HashSet<>();
+    for (final var state : states) {
+      result.add(toFen(state));
+    }
+    return result;
   }
 
   private static String lichessAnalysisUrl(String fen) {
