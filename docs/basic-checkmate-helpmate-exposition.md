@@ -199,6 +199,19 @@ Locally, the state is coherent enough to be enumerated. Black is in check from t
 
 The important observation is that the displayed position is not strictly legal. Since it is Black to move and Black is in check by a bishop adjacent on `b1-a2`, White's last move would have had to create that check. The bishop cannot have moved to `b1` from a legal origin: the diagonal square `a2` is occupied by the black king, and `c2` is occupied by the white king. Nor can the check have been discovered by moving another white piece, because the bishop and king are adjacent and there is no intervening blocker. Thus the position cannot arise from a legal game.
 
+This retro-legality step is not merely mechanical bookkeeping. The finite graph
+and witness verification are mechanical, but assessing possible counterexamples
+as not strictly legal still requires chess-specific retro intuition unless a
+separate full proof-game classifier is built. The difficulty is that apparent
+last-move impossibilities can be explained by captures. For example,
+`4kR2/8/4K3/8/8/8/8/8 b - - 0 1` may look suspicious in isolation: Black is to
+move and in check from a rook on `f8`. But it can arise from
+`4kb1R/8/4K3/8/8/8/8/8 w - - 0 1` by `Rxf8+`, with the rook from `h8`
+capturing a black bishop on `f8`. Therefore a mechanical strict-legality test
+cannot only search for quiet origins of the checking piece; it must also account
+for possible captured material, which makes the general retro problem much more
+challenging.
+
 Consequently, this exception should not block the strict chess statement. A strictly legal root cannot have a legal path into a strictly illegal terminal component. For the KBNvK case, the only obstruction found by the local graph appears to be precisely such a retro-illegal artifact.
 
 ## 10. Consequence for CHA-style analysis

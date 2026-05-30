@@ -120,6 +120,21 @@ discovered, because the bishop is already adjacent to the black king with no
 intervening square. The position is locally coherent enough to enumerate, but it
 cannot arise from the normal starting position.
 
+This last step is intentionally not hidden behind the finite-state graph. The
+reachability analysis is mechanical, but judging the possible counterexamples as
+not strictly legal still uses retrograde chess intuition. A fully mechanical
+strict-legality classifier is harder than it first appears, because positions
+that look impossible by an ordinary last move may have arisen by capture. For
+example, the position
+[`4kR2/8/4K3/8/8/8/8/8 b - - 0 1`](https://lichess.org/analysis/standard/4kR2/8/4K3/8/8/8/8/8_b_-_-_0_1)
+might look suspicious if considered in isolation: Black is to move and in check
+from the rook on `f8`. But it can arise from
+[`4kb1R/8/4K3/8/8/8/8/8 w - - 0 1`](https://lichess.org/analysis/standard/4kb1R/8/4K3/8/8/8/8/8_w_-_-_0_1)
+by the legal move `Rxf8+`, with the rook from `h8` capturing a black bishop on
+`f8`. Thus strict legality cannot be decided only by asking whether the checking
+piece has a quiet origin square; captures have to be included, which makes the
+general retro problem substantially more challenging.
+
 This is the reason for the computational approach: enumerate the full finite
 state space, compute reachability, and then verify the recorded witnesses with
 the ordinary legal move generator.
