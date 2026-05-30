@@ -39,10 +39,15 @@ The local graph contains one apparent black-to-move exception:
 
 That position is retro-illegal and therefore cannot arise in a real chess game.
 
-The same computation also classifies White-to-move roots. For `KRvK` and
-`KQvK`, every locally legal White-to-move position has a helpmate. The remaining
-classes have local White-to-move no-helpmate positions. One representative per
-board-symmetry class is:
+The same computation also classifies White-to-move roots. For `KRvK`, `KQvK`,
+`KRvKB(light bishop)`, and `KRvKN`, every ongoing locally legal White-to-move
+position has a helpmate. In `KRvKB(light bishop)` and `KRvKN`, this includes
+positions where White first captures Black's bishop or knight and reduces to
+the verified `KRvK` case. Positions where White has already been checkmated or
+stalemated are not ongoing roots.
+
+Only `KBBvK` and `KBNvK` currently have local White-to-move no-helpmate
+positions. One representative per board-symmetry class is:
 
 | Material class | Representative position | Strict-game status |
 |---|---|---|
@@ -64,12 +69,6 @@ board-symmetry class is:
 | `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/3N4/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/8/3N4/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1) | not yet classified |
 | `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/N7/8/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/N7/8/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/N7/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1) | not yet classified |
 | `KBNvK, light bishop` | <a href="https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B1K5/k7%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/2N5/8/B1K5/k7 w - - 0 1" width="180"></a><br>`8/8/8/8/2N5/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1) | not yet classified |
-| `KRvKB(light bishop)` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/6k1/6b1/6RK_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/6k1/6b1/6RK%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/6k1/6b1/6RK w - - 0 1" width="180"></a><br>`8/8/8/8/8/6k1/6b1/6RK w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/6k1/6b1/6RK_w_-_-_0_1) | not yet classified |
-| `KRvKB(light bishop)` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/7k/6b1/6RK_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/7k/6b1/6RK%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/7k/6b1/6RK w - - 0 1" width="180"></a><br>`8/8/8/8/8/7k/6b1/6RK w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/7k/6b1/6RK_w_-_-_0_1) | not yet classified |
-| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/k7/2n5/KR6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/k7/2n5/KR6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/k7/2n5/KR6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/k7/2n5/KR6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/k7/2n5/KR6_w_-_-_0_1) | not yet classified |
-| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/kn6/8/KR6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/kn6/8/KR6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/kn6/8/KR6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/kn6/8/KR6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/kn6/8/KR6_w_-_-_0_1) | not yet classified |
-| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/1k6/n7/RK6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/1k6/n7/RK6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/1k6/n7/RK6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/1k6/n7/RK6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/1k6/n7/RK6_w_-_-_0_1) | not yet classified |
-| `KRvKN` | <a href="https://lichess.org/analysis/standard/8/8/8/8/8/2k5/n7/RK6_w_-_-_0_1"><img src="https://fen2image.chessvision.ai/8/8/8/8/8/2k5/n7/RK6%20w%20-%20-%200%201?turn=white&amp;pov=white" alt="8/8/8/8/8/2k5/n7/RK6 w - - 0 1" width="180"></a><br>`8/8/8/8/8/2k5/n7/RK6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/2k5/n7/RK6_w_-_-_0_1) | not yet classified |
 
 The next retro-legality task is to decide, for each row in this table, whether
 the represented local position can arise from an ordinary chess game.
@@ -154,13 +153,13 @@ against best defense. It says that a helpmate exists: there is some legal
 continuation, with both sides allowed to cooperate, that reaches Black
 checkmate.
 
-The same reachability graph also answers the white-to-move question. In that
-case White directly chooses the first witness move. The local result is clean
-for `KRvK` and `KQvK`: every locally legal white-to-move state is
-cooperatively winnable. For the larger material classes there are small local
-exception sets. These are recorded separately because their strict-game
-legality still needs the same retro-analysis discipline as the black-to-move
-exception in `KBNvK`.
+The same analysis also classifies the white-to-move question. White can either
+follow a fixed-material witness, or, in the rook endgames with a black defender,
+capture that defender and reduce to `KRvK`. Roots where White has already been
+checkmated or stalemated are not ongoing games. With these distinctions,
+`KRvK`, `KQvK`, `KRvKB(light bishop)`, and `KRvKN` have no ongoing local
+white-to-move exceptions; `KBBvK` and `KBNvK` still have small local exception
+sets.
 
 ## Verification
 
@@ -212,13 +211,20 @@ White-to-move local reachability:
 | `KQvK` | 144,508 | 0 | 0 |
 | `KBBvK`, opposite bishops | 2,504,128 | 24 | 3 |
 | `KBNvK`, light bishop | 5,437,752 | 60 | 15 |
-| `KRvKB(light bishop)` | 5,390,364 | 8 | 2 |
-| `KRvKN` | 10,780,728 | 32 | 4 |
+| `KRvKB(light bishop)` | 5,390,364 | 0 | 0 |
+| `KRvKN` | 10,780,728 | 0 | 0 |
 
-These white-to-move exceptions are local material-class exceptions, not yet a
-claim about positions reachable from an ordinary game. The witness verifier
-already checks all white-to-move winning states, because the stored witness
-edges are side-to-move agnostic.
+The nonzero white-to-move exception rows are local material-class exceptions,
+not yet a claim about positions reachable from an ordinary game. The witness
+verifier already checks all fixed-material white-to-move winning states, because
+the stored witness edges are side-to-move agnostic.
+
+For the rook endgames with a black defender, the corrected classification also
+records non-exceptional local roots outside the fixed material-preserving graph:
+`KRvKB(light bishop)` has 8 White-to-move states where White captures the bishop
+and reduces to the verified `KRvK` case; `KRvKN` has 8 already-ended
+White-to-move states and 24 states where White captures the knight and reduces
+to `KRvK`.
 
 ## Strict-Legality Seed Checks
 

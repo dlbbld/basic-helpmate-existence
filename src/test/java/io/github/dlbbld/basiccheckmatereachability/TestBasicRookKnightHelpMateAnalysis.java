@@ -18,8 +18,10 @@ class TestBasicRookKnightHelpMateAnalysis {
     assertEquals(2644536, result.blackToMoveInCheckStateCount());
     assertEquals(9890720, result.blackToMoveNotInCheckStateCount());
     assertEquals(9328, result.blackCheckmateCount());
-    assertEquals(32, result.unwinnableWhiteToMoveStateCount());
-    assertEquals(4, result.unwinnableWhiteToMoveRepresentatives().size());
+    assertEquals(8, result.endedWhiteToMoveStateCount());
+    assertEquals(24, result.reducibleWhiteToMoveStateCount());
+    assertEquals(0, result.unwinnableWhiteToMoveStateCount());
+    assertEquals(0, result.unwinnableWhiteToMoveRepresentatives().size());
     assertEquals(12525880, result.ongoingBlackToMoveStateCount());
     assertEquals(23308736, result.winningStateCount());
 
@@ -40,7 +42,8 @@ class TestBasicRookKnightHelpMateAnalysis {
     assertEquals(result.blackToMoveStateCount(),
         result.blackToMoveInCheckStateCount() + result.blackToMoveNotInCheckStateCount());
     assertEquals(result.legalStateCount() - result.winningStateCount(),
-        result.unwinnableWhiteToMoveStateCount() + result.forcedRookCaptureStateCount()
+        result.endedWhiteToMoveStateCount() + result.reducibleWhiteToMoveStateCount()
+            + result.unwinnableWhiteToMoveStateCount() + result.forcedRookCaptureStateCount()
             + result.stalemateStateCount() + result.counterexampleStateCount());
   }
 }

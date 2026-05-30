@@ -31,10 +31,13 @@ public class GenerateWhiteToMoveReachabilitySummary {
     print("KRvKB(light bishop)", rookLightBishop.whiteToMoveStateCount(),
         rookLightBishop.unwinnableWhiteToMoveStateCount(),
         rookLightBishop.unwinnableWhiteToMoveRepresentatives().size());
+    printNonOngoingOrReducible(rookLightBishop.endedWhiteToMoveStateCount(),
+        rookLightBishop.reducibleWhiteToMoveStateCount());
 
     final var rookKnight = BasicRookKnightHelpMateAnalysis.analyze();
     print("KRvKN", rookKnight.whiteToMoveStateCount(), rookKnight.unwinnableWhiteToMoveStateCount(),
         rookKnight.unwinnableWhiteToMoveRepresentatives().size());
+    printNonOngoingOrReducible(rookKnight.endedWhiteToMoveStateCount(), rookKnight.reducibleWhiteToMoveStateCount());
 
     System.out.println();
     System.out.println("Black-to-move local exception:");
@@ -62,6 +65,11 @@ public class GenerateWhiteToMoveReachabilitySummary {
       int canonicalUnwinnableWhiteToMoveStates) {
     System.out.printf("%s: white-to-move states %,d, unwinnable %,d, canonical %,d%n", materialClass,
         whiteToMoveStates, unwinnableWhiteToMoveStates, canonicalUnwinnableWhiteToMoveStates);
+  }
+
+  private static void printNonOngoingOrReducible(int endedWhiteToMoveStates, int reducibleWhiteToMoveStates) {
+    System.out.printf("  ended white-to-move %,d, reducible by White capture %,d%n", endedWhiteToMoveStates,
+        reducibleWhiteToMoveStates);
   }
 
   private static void printPositionRow(String materialClass, String fen, String strictGameStatus) {
