@@ -257,16 +257,11 @@ to `KRvK`. The tests replay each such White capture with Ashlar's legal move
 generator and then check that the resulting `KRvK` position is a verified
 helpmate root for White.
 
-## External Count Cross-Check
+## External Count Cross-Checks
 
-The `KRvK` raw count can be checked against the Syzygy tablebase statistics.
-The Syzygy site displays `KRvK` statistics as 47,219 White wins and 2,796 draws,
-for 50,015 unique positions. Its machine-readable statistics keep the side to
-move separated: White-to-move has 21,959 wins; Black-to-move has 25,260 losses
-for the side to move and 2,796 draws. The public source combines these as
-White wins = `21,959 + 25,260 = 47,219`, draws = `2,796`.
-
-Those numbers use Kirill Kryukov's
+The raw state counts can be checked against the Syzygy tablebase statistics by
+putting both computations in the same quotient space. Syzygy uses Kirill
+Kryukov's
 [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/)
 definition. In that definition, a position includes side to move, castling
 rights, and en-passant rights, and "unique" means an equivalence class under
@@ -274,20 +269,43 @@ easy symmetries such as board mirroring, board rotation, and color swapping.
 The legality test is local: among other basic constraints, a position is illegal
 when the side to move can capture the opponent's king.
 
-Our `KRvK` count is deliberately raw before quotienting by board symmetries:
+The Syzygy site displays aggregate WDL outcomes, while its
+[machine-readable statistics](https://syzygy-tables.info/stats.json) keep the
+side to move separated. For example, the displayed `KRvK` value of 47,219 White
+wins is `21,959` White-to-move wins plus `25,260` Black-to-move losses.
 
-| Count | White to move | Black to move | Total |
-|---|---:|---:|---:|
-| Raw local states | 175,168 | 223,944 | 399,112 |
-| D8 board-symmetry representatives | 21,959 | 28,056 | 50,015 |
-| Syzygy unique positions | 21,959 | 28,056 | 50,015 |
+Our theorem tables above use raw local states. The table below gives the
+corresponding unique representative counts after quotienting by the applicable
+board symmetries, and compares them with Syzygy.
 
-Thus the `KRvK` state-space count matches Syzygy once both sides are compared in
-the same quotient space. The side split also explains the displayed Syzygy
-result: the 28,056 black-to-move representatives consist of 25,260 positions
-where the side to move loses, plus 2,796 drawn positions. The regression test
-`TestKrVkSyzygyCountCrossCheck` independently recomputes this bridge without
-calling the main analyzer.
+| Material class | Scope compared | Raw White to move | Raw Black to move | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| `KRvK` | theorem class | 175,168 | 223,944 | 21,959 | 28,056 | 50,015 | 50,015 | matches |
+| `KQvK` | theorem class | 144,508 | 223,944 | 18,081 | 28,056 | 46,137 | 46,137 | matches |
+| `KBNvK(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KBNvK` after bishop-colour symmetry | 5,437,752 | 6,830,292 | 1,359,578 | 1,707,888 | 3,067,466 | 3,067,466 | matches |
+| `KRvKB(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KRvKB` after bishop-colour symmetry | 5,390,364 | 5,916,232 | 1,347,906 | 1,479,198 | 2,827,104 | 2,827,104 | matches |
+| `KRvKN` | theorem class | 10,780,728 | 12,535,256 | 1,347,906 | 1,567,222 | 2,915,128 | 2,915,128 | matches |
+| `KBBvK`, opposite bishops | theorem subset only | 2,504,128 | 3,469,344 | 626,032 | 867,336 | 1,493,368 | n/a | Syzygy does not split by bishop colours |
+| `KBBvK`, all ordered bishop slots | expanded Syzygy material table | 10,164,056 | 13,660,584 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
+
+The `KBBvK` line needs special care. The theorem is only about opposite-coloured
+bishops. The Syzygy material key `KBBvK` does not expose a separate statistic
+for opposite-coloured bishops; it counts the whole two-bishop material table.
+When the independent counter is expanded to the same all-bishop table, using two
+bishop slots over all bishop-square colours, it matches Syzygy exactly. The
+opposite-coloured theorem subset is listed separately because that is the class
+proved here.
+
+These Syzygy tables do not replace our enumeration. Syzygy can probe a given FEN
+and its statistics expose aggregate counts, but the public statistics do not
+give a material-class move graph or a list of all positions with helpmate
+witnesses. Decoding tablebase files into such a graph would still require a
+position enumeration step, and Syzygy WDL is adversarial tablebase value rather
+than cooperative reachability. For this project, direct finite-state generation
+is simpler, faster, and produces the certificate edges needed by the verifier.
+
+The regression test `TestSyzygyCountCrossCheck` independently recomputes all
+counts in this section without calling the main reachability analyzers.
 
 ## Strict-Legality Seed Checks
 
@@ -320,6 +338,7 @@ Implemented:
 - finite-state theorem analyzers;
 - independent witness verifiers;
 - JUnit tests pinning all current counts;
+- Syzygy/NULP count cross-checks for the covered material classes;
 - last-move retro-illegality classification for the local white-to-move
   exception representatives;
 - seed strict-legality checks for `KRvK`, `KQvK`, `KBNvK(light bishop)`, and

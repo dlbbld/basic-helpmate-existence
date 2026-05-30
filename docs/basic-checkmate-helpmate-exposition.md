@@ -181,18 +181,24 @@ occupied, `b2` is adjacent to the white king, and `a2` is attacked by the
 bishop. Thus none of the canonical representatives has a legal black last move,
 and symmetries preserve that conclusion.
 
-As an external count check, the KRvK state space agrees with the Syzygy
-statistics after putting both computations in the same quotient space. Syzygy
-uses Kirill Kryukov's Number of Unique Legal Positions (NULP) convention:
-positions include side to move, and uniqueness quotients by easy symmetries such
-as board mirroring, board rotation, and color swapping. The Syzygy display for
-KRvK reports 47,219 White wins and 2,796 draws, for 50,015 unique positions. The
-machine-readable histogram separates the side to move: 21,959 White-to-move
-wins, 25,260 Black-to-move losses, and 2,796 Black-to-move draws. Our raw KRvK
-enumeration has 175,168 White-to-move states and 223,944 Black-to-move states,
-or 399,112 states total. Quotienting the same local states by the eight board
-symmetries gives 21,959 White-to-move representatives and 28,056 Black-to-move
-representatives, hence the same 50,015 total.
+As an external count check, the state spaces agree with the Syzygy statistics
+after putting both computations in the same quotient space. Syzygy uses Kirill
+Kryukov's Number of Unique Legal Positions (NULP) convention: positions include
+side to move, and uniqueness quotients by easy symmetries such as board
+mirroring, board rotation, and color swapping. Its machine-readable statistics
+also keep the side to move separated. For KRvK, for example, the displayed
+47,219 White wins are 21,959 White-to-move wins plus 25,260 Black-to-move
+losses.
+
+The comparison is exact for KRvK, KQvK, KBNvK, KRvKB, and KRvKN once the
+appropriate symmetry quotient is used. For light-bishop classes, the
+light-square restriction is equivalent to the unrestricted Syzygy bishop table
+after bishop-colour symmetry. KBBvK is the special case: this paper proves only
+the opposite-coloured bishop subset, while Syzygy exposes only the whole KBBvK
+material table. The opposite-bishop subset has 1,493,368 unique representatives;
+the expanded all-bishop table has 2,978,430, matching Syzygy exactly. The
+artifact includes a regression test that independently recomputes these
+bridging counts without calling the main reachability analyzers.
 
 ## 9. The KBNvK retro-illegal exception
 
