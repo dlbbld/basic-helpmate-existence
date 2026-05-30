@@ -104,6 +104,11 @@ KBBvK and KBNvK retain small local exception sets. Those exceptions are not part
 of the black-to-move theorem, and they are not strict game exceptions: their
 canonical representatives are retro-illegal by a last-move black-king argument.
 
+The light-bishop formulations are representatives of a symmetry class. The
+dark-square bishop cases are obtained by board symmetry, and positions where
+Black has the mating material are obtained by swapping colours. Thus the checked
+representatives cover the corresponding symmetric chess cases.
+
 ## 6. Why a direct proof is difficult
 
 One might hope to replace the finite computation by a classical geometric proof. For instance, one could try to divide the board into cases according to whether the black king is in a corner, on an edge, or in the interior, and then prove that a cooperative mating net can always be arranged unless Black is forced to capture material immediately.
@@ -199,6 +204,10 @@ material table. The opposite-bishop subset has 1,493,368 unique representatives;
 the expanded all-bishop table has 2,978,430, matching Syzygy exactly. The
 artifact includes a regression test that independently recomputes these
 bridging counts without calling the main reachability analyzers.
+
+This comparison is deliberately local, not strict-game retro-legal. The
+retro-illegal examples found in the artifact are still probeable in Syzygy,
+which is consistent with NULP legality and with our local enumeration.
 
 ## 9. The KBNvK retro-illegal exception
 

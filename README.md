@@ -34,6 +34,13 @@ statement is cooperative: a helpmate means that there exists some legal
 continuation to Black checkmate, not that White can force mate against best
 defense.
 
+This covers the symmetric bishop-colour and colour-swapped cases. For
+`KBNvK` and `KRvKB`, analyzing the light-square bishop case is enough because
+the dark-square bishop case is obtained by board symmetry. If Black, rather than
+White, has the mating material, the statement is obtained by swapping the
+colours. This is the standard reduction to one representative from each
+symmetry class.
+
 The local graph contains one apparent black-to-move exception:
 
 | Material class | Representative position | Strict-game status |
@@ -269,6 +276,14 @@ easy symmetries such as board mirroring, board rotation, and color swapping.
 The legality test is local: among other basic constraints, a position is illegal
 when the side to move can capture the opponent's king.
 
+This is the same level of legality used by our state-space counts. In
+particular, Syzygy/NULP can include positions that are locally legal but not
+strictly reachable from a real game. The retro-illegal positions
+`8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1` and
+`8/8/8/8/8/B7/B7/k1K5 w - - 0 1` are therefore expected to be probeable in the
+Syzygy tablebase. That does not contradict our strict-game conclusion; it
+confirms that the count comparison is being made in the same local state space.
+
 The Syzygy site displays aggregate WDL outcomes, while its
 [machine-readable statistics](https://syzygy-tables.info/stats.json) keep the
 side to move separated. For example, the displayed `KRvK` value of 47,219 White
@@ -276,17 +291,19 @@ wins is `21,959` White-to-move wins plus `25,260` Black-to-move losses.
 
 Our theorem tables above use raw local states. The table below gives the
 corresponding unique representative counts after quotienting by the applicable
-board symmetries, and compares them with Syzygy.
+board symmetries, and compares them with Syzygy. The unique count is not always
+the raw count divided by 8, because symmetric positions can have smaller
+orbits.
 
-| Material class | Scope compared | Raw White to move | Raw Black to move | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| `KRvK` | theorem class | 175,168 | 223,944 | 21,959 | 28,056 | 50,015 | 50,015 | matches |
-| `KQvK` | theorem class | 144,508 | 223,944 | 18,081 | 28,056 | 46,137 | 46,137 | matches |
-| `KBNvK(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KBNvK` after bishop-colour symmetry | 5,437,752 | 6,830,292 | 1,359,578 | 1,707,888 | 3,067,466 | 3,067,466 | matches |
-| `KRvKB(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KRvKB` after bishop-colour symmetry | 5,390,364 | 5,916,232 | 1,347,906 | 1,479,198 | 2,827,104 | 2,827,104 | matches |
-| `KRvKN` | theorem class | 10,780,728 | 12,535,256 | 1,347,906 | 1,567,222 | 2,915,128 | 2,915,128 | matches |
-| `KBBvK`, opposite bishops | theorem subset only | 2,504,128 | 3,469,344 | 626,032 | 867,336 | 1,493,368 | n/a | Syzygy does not split by bishop colours |
-| `KBBvK`, all ordered bishop slots | expanded Syzygy material table | 10,164,056 | 13,660,584 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
+| Material class | Scope compared | Raw White to move | Raw Black to move | Raw total | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `KRvK` | theorem class | 175,168 | 223,944 | 399,112 | 21,959 | 28,056 | 50,015 | 50,015 | matches |
+| `KQvK` | theorem class | 144,508 | 223,944 | 368,452 | 18,081 | 28,056 | 46,137 | 46,137 | matches |
+| `KBNvK(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KBNvK` after bishop-colour symmetry | 5,437,752 | 6,830,292 | 12,268,044 | 1,359,578 | 1,707,888 | 3,067,466 | 3,067,466 | matches |
+| `KRvKB(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KRvKB` after bishop-colour symmetry | 5,390,364 | 5,916,232 | 11,306,596 | 1,347,906 | 1,479,198 | 2,827,104 | 2,827,104 | matches |
+| `KRvKN` | theorem class | 10,780,728 | 12,535,256 | 23,315,984 | 1,347,906 | 1,567,222 | 2,915,128 | 2,915,128 | matches |
+| `KBBvK`, opposite bishops | theorem subset only | 2,504,128 | 3,469,344 | 5,973,472 | 626,032 | 867,336 | 1,493,368 | n/a | Syzygy does not split by bishop colours |
+| `KBBvK`, all ordered bishop slots | expanded Syzygy material table | 10,164,056 | 13,660,584 | 23,824,640 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
 
 The `KBBvK` line needs special care. The theorem is only about opposite-coloured
 bishops. The Syzygy material key `KBBvK` does not expose a separate statistic
