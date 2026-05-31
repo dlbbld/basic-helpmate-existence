@@ -8,7 +8,7 @@ Second conclusion: With Black having the move, White has a helpmate except for t
 
 That the game is ongoing is of course a necessary condition. If the position is checkmate or stalemate, the game end has already ended - the question for helpmate existence in this case is not applicable.
 
-Most notably the theorem only applies to positions which are not illegal, that is can arise from the initial chess position with a legal series of move. When putting the pieces on the board, one usually only checks that the king of the player not having the move is not in check (so was not exposed to check or left in check in the left move). We call such positions potentially legal. The above conclusions are not correct for all potentially legal positions. However when the conclusion is not correct for a potentially legal position, we find that for each such case, the potentially legal position is illegal.
+Most notably the theorem only applies to positions which are not illegal, that is can arise from the initial chess position with a legal series of move.
 
 ## Extension
 
@@ -20,11 +20,25 @@ In chess, the FIDE rule on flag fall asks whether the opponent still has a helpm
 
 For familiar material classes this sounds almost obvious. One might try to give a direct geometric proof by separating cases such as "king in the corner", "king on the edge", and "king in the middle". In practice this is surprisingly fragile. Side to move, immediate checks, stalemates, forced captures, and positions being illegal or not all matter.
 
-## Representative position
+## Terms
+
+### Potentially legal position
+
+When putting the pieces on the board, one usually only checks that the king of the player not having the move is not in check (so was not exposed to check or left in check in the left move). We call such positions potentially legal.
+
+### Legal and illegal position
+
+The FIDE laws of chess call a position which cannot arise from the starting position by a series of legal moves as illegal. We call a position that has arised from the starting position by a series of legal moves legal. So a not illegal position is called a legal position.
+
+### Representative position
 
 A position can have up to eight symnetric positions by mirroring and rotation. We apply the standard reduction to check for one such symnetric position only for each symnetry class, we call that then representative position.
 
-## Ilegal positions not satisfying the conclusion for Black to move
+## Ilegal positions not satisfying the conclusion
+
+The above conclusions are not correct for all potentially legal positions. However when the conclusion is not correct for a potentially legal position, we find that for each such case, the potentially legal position is illegal.
+
+### Black to move
 
 The `KBNvK` case shows why a pure hand proof is dangerous. The conclusion below does not hold for the below potentially legal position: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate.
 
@@ -38,7 +52,7 @@ The local graph contains one apparent black-to-move exception:
 
 The catch is that this position illegal. Black is in check from the bishop on `b1`. If the position had arisen in a legal game, White's last move would have had to create that check. But the bishop cannot have moved to `b1`: the diagonal squares from which it could have arrived are blocked by the black king on `a2` and the white king on `c2`. Nor can the check have been discovered, because the bishop is already adjacent to the black king with no intervening square. So the position cannot arise from the normal starting position, it is illegal, and as such the conclusions are still applicable, as like in online chess a position can never become illegal by the system assuring only legal moves can be played.
 
-## Ilegal positions not satisfying the conclusion for White to move
+### White to move
 
 The following are the potentially legal positions which do not satisfy the conclusion for White to move. A manual analysis proves all of them to be illegal.
 
@@ -101,7 +115,11 @@ The following are the potentially legal positions which do not satisfy the concl
 
 These positions cannot arise from an ordinary chess game. Since White is to move and Black has only a king, Black's previous move would have had to be a king move to `a1` in the displayed representatives. In the `KBBvK` rows, the only possible predecessor square not immediately ruled out by king adjacency is `a2`, but `a2` is occupied by a white bishop. In the `KBNvK` rows with a bishop on `a2`, the same argument applies. In the `KBNvK` rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence there is no legal black last move. Board symmetries preserve this retro-illegality.
 
-## Difficulty of determining if a position is not illegal
+\[Numerate KBBvK positions. Add proof of illegal positions after\]
+
+\[Reorder KBNvK positions: First with bishop on a2, king on c1, then knight making the trip as now. Then with bishop on a2, king on c2, then knight making the trip as now. Then with bishop on b1, king on c1, then knight making the trip as now. Also numerate KBNvK positions. Add proof of illegal positions after\]
+
+## Difficulty of determining if a position is legal
 
 For the conclusion it is only necessary to determine for all the potentially legal positions where the conclusion does not hold, if they are illegal. This could be done manually. However as a side note and for explanation the count of the not illegal positions is not in the table, here a brief explanation why this undertaking is not trivial. Starting from a legal position for example for KRvK we can derive with legal moves further legal positions. But not all. Because some legal positions can only arise by piece capture as the below example shows. This makes the determination of illegal positions much more difficult then it seems at first glance. For example, this position might look illegal if considered in isolation: Black is to move and in check from the rook on `f8`.
 
@@ -149,22 +167,11 @@ mvn test
 
 ```
 
-On the current machine this test suite takes roughly two minutes.
+On a notebook with a per 2026 average performance, this test suite takes roughly two minutes.
 
-## Current Results
+## Current Results for White to move
 
-Counts are over locally legal states. "Maximum witness distance" is the largest number of material-preserving legal plies in the stored cooperative path to a terminal mate seed. It is not adversarial depth-to-mate.
-
-| Material class | Legal states | Black-to-move states | Black checkmates | Stalemates | Forced first capture | Counterexamples | Maximum witness distance |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `KRvK` | 399,112 | 223,944 | 216 | 68 | 412 | 0 | 14 |
-| `KQvK` | 368,452 | 223,944 | 364 | 872 | 2,420 | 0 | 14 |
-| `KBBvK`, opposite bishops | 5,973,472 | 3,469,344 | 1,552 | 5,320 | 7,952 | 0 | 16 |
-| `KBNvK`, light bishop | 12,268,044 | 6,830,292 | 232 | 6,444 | 4,474 | 4 local states, 1 canonical, retro-illegal | 16 |
-| `KRvKB(light bishop)` | 11,306,596 | 5,916,232 | 3,264 | 48 | 3,740 | 0 | 14 |
-| `KRvKN` | 23,315,984 | 12,535,256 | 9,328 | 48 | 7,168 | 0 | 14 |
-
-The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
+### All potentially legal positions
 
 White-to-move local reachability:
 
@@ -181,15 +188,36 @@ The nonzero white-to-move exception rows are local material-class artifacts. The
 
 For the rook endgames with a black defender, the corrected classification also records non-exceptional local roots outside the fixed material-preserving graph: `KRvKB(light bishop)` has 8 White-to-move states where White captures the bishop and reduces to the verified `KRvK` case; `KRvKN` has 8 already-ended White-to-move states and 24 states where White captures the knight and reduces to `KRvK`. The tests replay each such White capture with Ashlar's legal move generator and then check that the resulting `KRvK` position is a verified helpmate root for White.
 
+### Potentially legal positions reduced to representative cases
+
+## Current Results for Black to move
+
+Counts are over potentially legal positions. "Maximum witness distance" is the largest number of material-preserving legal plies in the stored helmate path to checkmate. \[you say material-preserving, however KRvKB and KRvKB are allowed to capture, are we making use of such potentially shorter paths (if they are shorter - but we could reuse results for KRvK)?\] \[Would be adding a second legal state with an enemy piece like a rook still calculable. Can you put that as a seperate table?\]
+
+### All potentially legal positions
+
+| Material class | Legal states | Black-to-move states | Black checkmates | Stalemates | Forced first capture | Counterexamples | Maximum witness distance |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `KRvK` | 399,112 | 223,944 | 216 | 68 | 412 | 0 | 14 |
+| `KQvK` | 368,452 | 223,944 | 364 | 872 | 2,420 | 0 | 14 |
+| `KBBvK`, opposite bishops | 5,973,472 | 3,469,344 | 1,552 | 5,320 | 7,952 | 0 | 16 |
+| `KBNvK`, light bishop | 12,268,044 | 6,830,292 | 232 | 6,444 | 4,474 | 4 local states, 1 canonical, retro-illegal | 16 |
+| `KRvKB(light bishop)` | 11,306,596 | 5,916,232 | 3,264 | 48 | 3,740 | 0 | 14 |
+| `KRvKN` | 23,315,984 | 12,535,256 | 9,328 | 48 | 7,168 | 0 | 14 |
+
+### Potentially legal positions reduced to representative cases
+
+The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
+
 ## External Count Cross-Checks
 
-The raw state counts can be checked against the Syzygy tablebase statistics by putting both computations in the same quotient space. Syzygy uses Kirill Kryukov's [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/) definition. In that definition, a position includes side to move, castling rights, and en-passant rights, and "unique" means an equivalence class under easy symmetries such as board mirroring, board rotation, and color swapping. The legality test is local: among other basic constraints, a position is illegal when the side to move can capture the opponent's king.
+The possible legal position counts can be checked against the Syzygy tablebases. Syzygy uses Kirill Kryukov's [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/) (NULP) definition. In that definition, a position includes side to move, castling rights, and en-passant rights, and "unique" means an equivalence class under easy symmetries such as board mirroring, board rotation, and color swapping. NULP looks at possible legal position as we do, thus the comparison is valid.
 
-This is the same level of legality used by our state-space counts. In particular, Syzygy/NULP can include positions that are locally legal but not strictly reachable from a real game. The retro-illegal positions `8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1` and `8/8/8/8/8/B7/B7/k1K5 w - - 0 1` are therefore expected to be probeable in the Syzygy tablebase. That does not contradict our strict-game conclusion; it confirms that the count comparison is being made in the same local state space.
+For example the potentially legal but in fact illegal positions `8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1` and `8/8/8/8/8/B7/B7/k1K5 w - - 0 1` are in the Syzygy tablebase.
 
 The Syzygy site displays aggregate WDL outcomes, while its [machine-readable statistics](https://syzygy-tables.info/stats.json) keep the side to move separated. For example, the displayed `KRvK` value of 47,219 White wins is `21,959` White-to-move wins plus `25,260` Black-to-move losses.
 
-Our theorem tables above use raw local states. The table below gives the corresponding unique representative counts after quotienting by the applicable board symmetries, and compares them with Syzygy. The unique count is not always the raw count divided by 8, because symmetric positions can have smaller orbits.
+The table below gives the corresponding unique representative counts. The unique count is not always the raw count divided by 8, because symmetric positions can have smaller orbits.
 
 | Material class | Scope compared | Raw White to move | Raw Black to move | Raw total | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -203,7 +231,7 @@ Our theorem tables above use raw local states. The table below gives the corresp
 
 The `KBBvK` line needs special care. The theorem is only about opposite-coloured bishops. The Syzygy material key `KBBvK` does not expose a separate statistic for opposite-coloured bishops; it counts the whole two-bishop material table. When the independent counter is expanded to the same all-bishop table, using two bishop slots over all bishop-square colours, it matches Syzygy exactly. The opposite-coloured theorem subset is listed separately because that is the class proved here.
 
-These Syzygy tables do not replace our enumeration. Syzygy can probe a given FEN and its statistics expose aggregate counts, but the public statistics do not give a material-class move graph or a list of all positions with helpmate witnesses. Decoding tablebase files into such a graph would still require a position enumeration step, and Syzygy WDL is adversarial tablebase value rather than cooperative reachability. For this project, direct finite-state generation is simpler, faster, and produces the certificate edges needed by the verifier.
+As a note our further analysis cannot be derived from the Syzygy tables because Syzygy WDL is adversarial tablebase value rather than cooperative reachability.
 
 The regression test `TestSyzygyCountCrossCheck` independently recomputes all counts in this section without calling the main reachability analyzers.
 
@@ -214,7 +242,7 @@ python scripts/verify_syzygy_position_sets.py
 
 ```
 
-The script generates one representative per relevant board-symmetry class and probes each representative against local Syzygy files with python-chess. It does not use the main reachability analyzers. On 30 May 2026, it was run against the local Syzygy files in `C:\Users\danie\git\python-chess\data\syzygy\regular` with these results:
+The script generates one representative per relevant board-symmetry class and probes each representative against local Syzygy files with python-chess. It does not use the main reachability analyzers. On 30 May 2026, it was run against the local Syzygy files in with these results:
 
 | Material class | Unique representatives probed |
 | --- | --- |
@@ -225,17 +253,21 @@ The script generates one representative per relevant board-symmetry class and pr
 | `KRvKN` | 2,915,128 |
 | `KBBvK`, all ordered bishop slots | 2,978,430 |
 
-Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated local position sets are the Syzygy local position sets in the comparable quotient space. The opposite-coloured `KBBvK` theorem class is contained in the expanded all-bishop Syzygy probe.
+Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete.The opposite-coloured `KBBvK` theorem class is contained in the expanded all-bishop Syzygy probe.
 
-## Strict-Legality Seed Checks
+## Potentially Legal Position Reachability by Seed - Black to Move
 
-The main reachability enumeration works with local legality. A separate strict-legality experiment starts from a known game-reachable seed position and flood-fills forward using ordinary legal moves that preserve the material class.
+This analysis is done to provide information to better understand how many of the potentially legal positions are actually legal. The analysis shows that the answer is not trivial. A seed position cannot reach many potentially legal positions for some material classes. Assumption is that they need seeds with more material to reach potentially legal positions which are legal but the last move was a capture.
 
-This proves that every reached state is strictly legal in the sense of being reachable from the normal starting position, assuming the seed itself has a legal proof game.
+\[what to we prove here?\]: This proves that every reached state is strictly legal in the sense of being reachable from the normal starting position, assuming the seed itself has a legal proof game.
+
+### All potentially legal positions
 
 Current seed checks:
 
-| Material class | Seed | Legal states | Reached states | Unreached states | Unreached black-to-move non-check states |
+\[we assume the seed is a legal position: calculate and add the count of legal positions which can be reached from the seed\]
+
+| Material class | Seed | Potentially legal positions | Potentially legal positions reached | Potentially legal positions unreached | Potentially legal positions unreached non-check states |
 | --- | --- | --- | --- | --- | --- |
 | `KRvK` | `Ke1 Ra1 ke8 b` | 399,112 | 399,064 | 48 | 0 |
 | `KQvK` | `Ke1 Qd1 ke8 b` | 368,452 | 368,452 | 0 | 0 |
@@ -245,6 +277,24 @@ Current seed checks:
 | `KRvKN` | `Ke1 Ra1 ke8 nb8 b` | 23,315,984 | 23,301,272 | 14,712 | 8 |
 
 The important pattern is that the original-piece seed reaches every black-to-move non-check state in the classical basic-checkmate classes and in `KRvKB(light bishop)`. In `KRvKN`, the same material-preserving seed flood leaves 8 black-to-move non-check states outside the seed component; this is recorded as data, not used as an assumption in the theorem. The unreached states, where they exist, may require separate last-move or "entered by capture" retro analysis.
+
+### Potentially legal positions reduced to representative cases
+
+\[add counts for representative cases only\]
+
+\[add picture and link for the only unreachable KRvKN representative\]
+
+## Potentially Legal Position Reachability by Seed - White to Move
+
+\[add intro\]
+
+### All potentially legal positions
+
+\[add counts as for Black to move section\]
+
+### Potentially legal positions reduced to representative cases
+
+\[add counts as for Black to move section\]
 
 ## Status
 
