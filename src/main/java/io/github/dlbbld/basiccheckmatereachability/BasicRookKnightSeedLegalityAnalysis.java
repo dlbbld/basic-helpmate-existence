@@ -43,7 +43,8 @@ final class BasicRookKnightSeedLegalityAnalysis {
         countHavingMove(unreachable, BLACK_TO_MOVE), countHavingMoveAndCheck(unreachable, BLACK_TO_MOVE, true),
         countHavingMoveAndCheck(unreachable, BLACK_TO_MOVE, false), countHavingMove(unreachable, WHITE_TO_MOVE),
         countHavingMoveAndCheck(unreachable, WHITE_TO_MOVE, true), countHavingMoveAndCheck(unreachable, WHITE_TO_MOVE,
-            false), canonicalRepresentatives(unreachable));
+            false), canonicalRepresentatives(unreachable), canonicalRepresentatives(unreachable, BLACK_TO_MOVE,
+                false));
   }
 
   private static BitSet enumerateLegalStates() {
@@ -203,6 +204,17 @@ final class BasicRookKnightSeedLegalityAnalysis {
     return Collections.unmodifiableNavigableSet(result);
   }
 
+  private static NavigableSet<RookKnightState> canonicalRepresentatives(BitSet states, int havingMove,
+      boolean inCheck) {
+    final NavigableSet<RookKnightState> result = new TreeSet<>();
+    for (var state = states.nextSetBit(0); state >= 0; state = states.nextSetBit(state + 1)) {
+      if (havingMove(state) == havingMove && toBitboardPosition(state).isInCheck(side(havingMove)) == inCheck) {
+        result.add(canonical(toState(state)));
+      }
+    }
+    return Collections.unmodifiableNavigableSet(result);
+  }
+
   private static NavigableSet<RookKnightState> canonicalRepresentatives(Collection<RookKnightState> states) {
     final NavigableSet<RookKnightState> result = new TreeSet<>();
     for (final RookKnightState state : states) {
@@ -301,10 +313,13 @@ final class BasicRookKnightSeedLegalityAnalysis {
       int unreachableBlackToMoveStateCount, int unreachableBlackToMoveInCheckStateCount,
       int unreachableBlackToMoveNotInCheckStateCount, int unreachableWhiteToMoveStateCount,
       int unreachableWhiteToMoveInCheckStateCount, int unreachableWhiteToMoveNotInCheckStateCount,
-      Set<RookKnightState> unreachableRepresentatives) {
+      Set<RookKnightState> unreachableRepresentatives,
+      Set<RookKnightState> unreachableBlackToMoveNotInCheckRepresentatives) {
 
     AnalysisResult {
       unreachableRepresentatives = canonicalRepresentatives(unreachableRepresentatives);
+      unreachableBlackToMoveNotInCheckRepresentatives = canonicalRepresentatives(
+          unreachableBlackToMoveNotInCheckRepresentatives);
     }
   }
 }

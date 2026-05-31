@@ -25,6 +25,35 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
   private static final int SQUARE_COUNT = 64;
   private static final int STATE_COUNT = SQUARE_COUNT * SQUARE_COUNT * SQUARE_COUNT * SQUARE_COUNT * 2;
 
+  private static final int[][] KNIGHT_DELTAS = {
+      {-2, -1},
+      {-2, 1},
+      {-1, -2},
+      {-1, 2},
+      {1, -2},
+      {1, 2},
+      {2, -1},
+      {2, 1}
+  };
+
+  private static final int[][] KING_DELTAS = {
+      {-1, -1},
+      {-1, 0},
+      {-1, 1},
+      {0, -1},
+      {0, 1},
+      {1, -1},
+      {1, 0},
+      {1, 1}
+  };
+
+  private static final int[][] BISHOP_DELTAS = {
+      {-1, -1},
+      {-1, 1},
+      {1, -1},
+      {1, 1}
+  };
+
   private BasicLightBishopKnightSeedLegalityAnalysis() {
   }
 
@@ -38,12 +67,19 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
     final BitSet reachable = calculateReachable(legalStates, seed);
     final BitSet unreachable = (BitSet) legalStates.clone();
     unreachable.andNot(reachable);
+    final BitSet unreachableBlackToMoveInCheck = filterHavingMoveAndCheck(unreachable, BLACK_TO_MOVE, true);
+    final BitSet noLastWhiteMove = filterNoLastWhiteMove(unreachableBlackToMoveInCheck);
 
     return new AnalysisResult(legalStates.cardinality(), reachable.cardinality(), unreachable.cardinality(),
         countHavingMove(unreachable, BLACK_TO_MOVE), countHavingMoveAndCheck(unreachable, BLACK_TO_MOVE, true),
         countHavingMoveAndCheck(unreachable, BLACK_TO_MOVE, false), countHavingMove(unreachable, WHITE_TO_MOVE),
         countHavingMoveAndCheck(unreachable, WHITE_TO_MOVE, true), countHavingMoveAndCheck(unreachable, WHITE_TO_MOVE,
-            false), canonicalRepresentatives(unreachable));
+            false), canonicalRepresentatives(unreachable), unreachableBlackToMoveInCheck.cardinality(),
+        noLastWhiteMove.cardinality(),
+        unreachableBlackToMoveInCheck.cardinality() - noLastWhiteMove.cardinality(),
+        canonicalRepresentatives(unreachableBlackToMoveInCheck).size(),
+        canonicalRepresentatives(noLastWhiteMove).size(),
+        canonicalRepresentativesWithout(unreachableBlackToMoveInCheck, noLastWhiteMove).size());
   }
 
   private static BitSet enumerateLegalStates() {
@@ -114,6 +150,63 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
       }
     }
     return result;
+  }
+
+  private static BitSet filterHavingMoveAndCheck(BitSet states, int havingMove, boolean inCheck) {
+    final BitSet result = new BitSet(STATE_COUNT);
+    for (var state = states.nextSetBit(0); state >= 0; state = states.nextSetBit(state + 1)) {
+      if (havingMove(state) == havingMove && toBitboardPosition(state).isInCheck(side(havingMove)) == inCheck) {
+        result.set(state);
+      }
+    }
+    return result;
+  }
+
+  private static BitSet filterNoLastWhiteMove(BitSet states) {
+    final BitSet result = new BitSet(STATE_COUNT);
+    for (var state = states.nextSetBit(0); state >= 0; state = states.nextSetBit(state + 1)) {
+      if (!hasLastWhiteMove(state)) {
+        result.set(state);
+      }
+    }
+    return result;
+  }
+
+  private static boolean hasLastWhiteMove(int state) {
+    final var whiteKing = whiteKing(state);
+    final var whiteBishop = whiteBishop(state);
+    final var whiteKnight = whiteKnight(state);
+    final var blackKing = blackKing(state);
+
+    for (final int[] delta : KING_DELTAS) {
+      final var origin = offset(whiteKing, delta);
+      if (origin != -1 && origin != whiteBishop && origin != whiteKnight && origin != blackKing
+          && isLegalState(origin, whiteBishop, whiteKnight, blackKing, WHITE_TO_MOVE)) {
+        return true;
+      }
+    }
+
+    for (final int[] delta : BISHOP_DELTAS) {
+      var origin = offset(whiteBishop, delta);
+      while (origin != -1) {
+        if (origin == whiteKing || origin == whiteKnight || origin == blackKing) {
+          break;
+        }
+        if (isLegalState(whiteKing, origin, whiteKnight, blackKing, WHITE_TO_MOVE)) {
+          return true;
+        }
+        origin = offset(origin, delta);
+      }
+    }
+
+    for (final int[] delta : KNIGHT_DELTAS) {
+      final var origin = offset(whiteKnight, delta);
+      if (origin != -1 && origin != whiteKing && origin != whiteBishop && origin != blackKing
+          && isLegalState(whiteKing, whiteBishop, origin, blackKing, WHITE_TO_MOVE)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean capturesWhitePiece(int state, MoveSpecification move) {
@@ -239,6 +332,15 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
     return rank * 8 + file;
   }
 
+  private static int offset(int square, int[] delta) {
+    final var targetFile = file(square) + delta[0];
+    final var targetRank = rank(square) + delta[1];
+    if (targetFile < 0 || targetFile >= 8 || targetRank < 0 || targetRank >= 8) {
+      return -1;
+    }
+    return square(targetFile, targetRank);
+  }
+
   private static boolean isLightSquare(int square) {
     return (file(square) + rank(square)) % 2 == 1;
   }
@@ -249,6 +351,13 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
       result.add(canonical(toState(state)));
     }
     return Collections.unmodifiableNavigableSet(result);
+  }
+
+  private static NavigableSet<LightBishopKnightState> canonicalRepresentativesWithout(BitSet states,
+      BitSet excludedStates) {
+    final BitSet remaining = (BitSet) states.clone();
+    remaining.andNot(excludedStates);
+    return canonicalRepresentatives(remaining);
   }
 
   private static NavigableSet<LightBishopKnightState> canonicalRepresentatives(
@@ -370,7 +479,10 @@ final class BasicLightBishopKnightSeedLegalityAnalysis {
       int unreachableBlackToMoveStateCount, int unreachableBlackToMoveInCheckStateCount,
       int unreachableBlackToMoveNotInCheckStateCount, int unreachableWhiteToMoveStateCount,
       int unreachableWhiteToMoveInCheckStateCount, int unreachableWhiteToMoveNotInCheckStateCount,
-      Set<LightBishopKnightState> unreachableRepresentatives) {
+      Set<LightBishopKnightState> unreachableRepresentatives, int lastMoveFilterInputStateCount,
+      int lastMoveFilterRejectedStateCount, int afterLastMoveFilterStateCount,
+      int lastMoveFilterInputRepresentativeCount, int lastMoveFilterRejectedRepresentativeCount,
+      int afterLastMoveFilterRepresentativeCount) {
 
     AnalysisResult {
       unreachableRepresentatives = canonicalRepresentatives(unreachableRepresentatives);

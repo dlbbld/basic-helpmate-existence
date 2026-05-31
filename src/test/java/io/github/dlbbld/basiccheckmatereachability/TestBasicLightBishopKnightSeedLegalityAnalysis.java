@@ -29,6 +29,12 @@ class TestBasicLightBishopKnightSeedLegalityAnalysis {
     assertEquals(1260, result.unreachableWhiteToMoveNotInCheckStateCount());
 
     assertEquals(24600, result.unreachableRepresentatives().size());
+    assertEquals(97030, result.lastMoveFilterInputStateCount());
+    assertEquals(96998, result.lastMoveFilterRejectedStateCount());
+    assertEquals(32, result.afterLastMoveFilterStateCount());
+    assertEquals(24285, result.lastMoveFilterInputRepresentativeCount());
+    assertEquals(24277, result.lastMoveFilterRejectedRepresentativeCount());
+    assertEquals(8, result.afterLastMoveFilterRepresentativeCount());
     assertTrue(result.unreachableRepresentatives()
         .contains(new LightBishopKnightState(Square.C2, Square.B1, Square.C4, Square.A2, Side.BLACK)));
   }

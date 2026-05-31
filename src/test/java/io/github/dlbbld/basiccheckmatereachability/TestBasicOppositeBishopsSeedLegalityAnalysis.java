@@ -24,5 +24,11 @@ class TestBasicOppositeBishopsSeedLegalityAnalysis {
     assertEquals(568, result.unreachableWhiteToMoveNotInCheckStateCount());
 
     assertEquals(5458, result.unreachableRepresentatives().size());
+    assertEquals(43096, result.lastMoveFilterInputStateCount());
+    assertEquals(43016, result.lastMoveFilterRejectedStateCount());
+    assertEquals(80, result.afterLastMoveFilterStateCount());
+    assertEquals(5387, result.lastMoveFilterInputRepresentativeCount());
+    assertEquals(5377, result.lastMoveFilterRejectedRepresentativeCount());
+    assertEquals(10, result.afterLastMoveFilterRepresentativeCount());
   }
 }
