@@ -79,30 +79,6 @@ The three `KBBvK` representatives are illegal. Since White is to move and Black 
 
 The `KBNvK` representatives are illegal by the same last-move idea. For the rows with a bishop on `a2`, a black king coming from `a2` is impossible because `a2` is occupied. For the rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence again there is no legal black last move. Board symmetries preserve these arguments.
 
-## Difficulty of determining if a position is legal
-
-For the conclusion it is only necessary to determine for all the potentially legal positions where the conclusion does not hold, if they are illegal. This could be done manually. However as a side note and for explanation the count of the not illegal positions is not in the table, here a brief explanation why this undertaking is not trivial. Starting from a legal position for example for KRvK we can derive with legal moves further legal positions. But not all. Because some legal positions can only arise by piece capture as the below example shows. This makes the determination of illegal positions much more difficult than it seems at first glance. For example, this position might look illegal if considered in isolation: Black is to move and in check from the rook on `e8`.
-
-[![2k1R3/4K3/8/8/8/8/8/8 b - - 0 1](https://fen2image.chessvision.ai/2k1R3/4K3/8/8/8/8/8/8%20b%20-%20-%200%201?turn=black&pov=black)](https://lichess.org/analysis/standard/2k1R3/4K3/8/8/8/8/8/8_b_-_-_0_1)
-
-```text
-2k1R3/4K3/8/8/8/8/8/8 b - - 0 1
-
-```
-
-[Open this position on Lichess](https://lichess.org/analysis/standard/2k1R3/4K3/8/8/8/8/8/8_b_-_-_0_1).
-
-But it can arise by the legal move `Rxe8+`, with the rook from `g8` capturing a black bishop on `e8`, from:
-
-[![2k1b1R1/4K3/8/8/8/8/8/8 w - - 0 1](https://fen2image.chessvision.ai/2k1b1R1/4K3/8/8/8/8/8/8%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/2k1b1R1/4K3/8/8/8/8/8/8_w_-_-_0_1)
-
-```text
-2k1b1R1/4K3/8/8/8/8/8/8 w - - 0 1
-
-```
-
-[Open the predecessor on Lichess](https://lichess.org/analysis/standard/2k1b1R1/4K3/8/8/8/8/8/8_w_-_-_0_1).
-
 ## Verification
 
 The analyzer stores one witness move for every winning non-terminal state. The independent verifier then checks:
@@ -187,117 +163,6 @@ Counts are over potentially legal positions. "Maximum witness distance" is the l
 
 The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
 
-## Potentially Legal Position Reachability by Seed - Black to Move
-
-This analysis is included only to understand legal-position reachability better. It is not part of the main proof. Starting from one known legal seed and making legal moves inside the material class proves that every reached position is legal. It does not prove that every unreached position is illegal, because some legal positions may be reachable only through a capture from a position with more material.
-
-For the seed positions below we use original piece squares after all irrelevant material has disappeared. These seed positions are legal. The reached count is therefore a lower bound on the number of legal positions in the potentially legal state space.
-
-### All potentially legal positions
-
-Current seed checks:
-
-| Material class | Seed | Potentially legal positions | Reached positions | Unreached positions | Unreached black-to-move positions | Unreached black-to-move in-check positions | Unreached black-to-move non-check positions |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `KRvK` | `Ke1 Ra1 ke8 b` | 399,112 | 399,064 | 48 | 48 | 48 | 0 |
-| `KQvK` | `Ke1 Qd1 ke8 b` | 368,452 | 368,452 | 0 | 0 | 0 | 0 |
-| `KBNvK(light bishop)` | `Ke1 Bf1 Nb1 ke8 b` | 12,268,044 | 12,169,754 | 98,290 | 97,030 | 97,030 | 0 |
-| `KBBvK(opposite bishops)` | `Ke1 Bf1 Bc1 ke8 b` | 5,973,472 | 5,929,808 | 43,664 | 43,096 | 43,096 | 0 |
-| `KRvKB(light bishop)` | `Ke1 Ra1 ke8 bc8 b` | 11,306,596 | 11,264,310 | 42,286 | 7,032 | 7,032 | 0 |
-| `KRvKN` | `Ke1 Ra1 ke8 nb8 b` | 23,315,984 | 23,301,272 | 14,712 | 14,336 | 14,328 | 8 |
-
-The important pattern is that the original-piece seed reaches every black-to-move non-check state in the classical basic-checkmate classes and in `KRvKB(light bishop)`. In `KRvKN`, the same material-preserving seed flood leaves 8 black-to-move non-check states outside the seed component; this is recorded as data, not used as an assumption in the theorem. The unreached states, where they exist, may require separate last-move or "entered by capture" retro analysis.
-
-### Last-move filters for unreached in-check positions
-
-The large unreached black-to-move sets in `KBBvK` and `KBNvK` are all in-check positions. Many are immediately impossible by a local last-move argument. For each current position, the filter enumerates the same-material predecessor candidates obtained by reversing one White move: the White king, either bishop, or the knight when present. A candidate predecessor is accepted only if it is potentially legal with White to move, meaning that Black was not already in check before White's last move. If there is no such candidate, the current position cannot have arisen by a normal same-material White last move, so it is filtered as illegal.
-
-This is still a partial strict-legality analysis, not a complete legal-position classifier. The remaining positions below are not proved legal; they are only the representative cases not dismissed by this last-move filter.
-
-| Material class | Last-move test | Unreached black-to-move in-check positions | Filtered as illegal | Remaining after filter | Representative in-check cases | Filtered representative cases | Remaining representative cases |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `KBBvK(opposite bishops)` | no same-material White last move | 43,096 | 43,016 | 80 | 5,387 | 5,377 | 10 |
-| `KBNvK(light bishop)` | no same-material White last move | 97,030 | 96,998 | 32 | 24,285 | 24,277 | 8 |
-
-Remaining `KBBvK` representative cases:
-
-```text
-8/8/8/8/8/8/BB6/k1K5 b - - 0 1
-8/8/8/8/8/2B5/B7/k1K5 b - - 0 1
-8/8/8/8/3B4/8/B7/k1K5 b - - 0 1
-8/8/8/4B3/8/8/B7/k1K5 b - - 0 1
-8/8/5B2/8/8/8/B7/k1K5 b - - 0 1
-8/6B1/8/8/8/8/B7/k1K5 b - - 0 1
-8/8/8/8/8/8/1BK5/kB6 b - - 0 1
-8/8/8/8/8/2B5/2K5/kB6 b - - 0 1
-8/8/8/8/8/8/BBK5/k7 b - - 0 1
-8/8/8/8/8/2B5/B1K5/k7 b - - 0 1
-```
-
-Remaining `KBNvK` representative cases:
-
-```text
-8/8/8/8/8/8/B1N5/k1K5 b - - 0 1
-8/8/8/8/8/1N6/B7/k1K5 b - - 0 1
-8/8/8/8/8/8/6BN/5K1k b - - 0 1
-8/8/8/8/8/5B2/7N/5K1k b - - 0 1
-8/8/8/8/8/1N6/2K5/kB6 b - - 0 1
-8/8/8/8/8/1N6/B1K5/k7 b - - 0 1
-8/8/8/8/8/8/5KBN/7k b - - 0 1
-8/8/8/8/8/5B2/5K1N/7k b - - 0 1
-```
-
-### Potentially legal positions reduced to representative cases
-
-The same data reduced to representative cases is:
-
-| Material class | Seed | Potentially legal representative cases | Reached representative cases | Unreached representative cases | Unreached black-to-move representative cases | Unreached black-to-move in-check representative cases | Unreached black-to-move non-check representative cases |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `KRvK` | `Ke1 Ra1 ke8 b` | 50,015 | 50,009 | 6 | 6 | 6 | 0 |
-| `KQvK` | `Ke1 Qd1 ke8 b` | 46,137 | 46,137 | 0 | 0 | 0 | 0 |
-| `KBNvK(light bishop)` | `Ke1 Bf1 Nb1 ke8 b` | 3,067,466 | 3,042,866 | 24,600 | 24,285 | 24,285 | 0 |
-| `KBBvK(opposite bishops)` | `Ke1 Bf1 Bc1 ke8 b` | 1,493,368 | 1,487,910 | 5,458 | 5,387 | 5,387 | 0 |
-| `KRvKB(light bishop)` | `Ke1 Ra1 ke8 bc8 b` | 2,827,104 | 2,816,503 | 10,601 | 1,758 | 1,758 | 0 |
-| `KRvKN` | `Ke1 Ra1 ke8 nb8 b` | 2,915,128 | 2,913,289 | 1,839 | 1,792 | 1,791 | 1 |
-
-For black-to-move non-check states, the only unreached representative currently found by this seed analysis is in `KRvKN`.
-
-The `KRvKN` representative is:
-
-[![8/8/8/8/8/8/n7/RK1k4 b - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/n7/RK1k4%20b%20-%20-%200%201?turn=black&pov=black)](https://lichess.org/analysis/standard/8/8/8/8/8/8/n7/RK1k4_b_-_-_0_1)
-
-```text
-8/8/8/8/8/8/n7/RK1k4 b - - 0 1
-```
-
-[Open this position on Lichess](https://lichess.org/analysis/standard/8/8/8/8/8/8/n7/RK1k4_b_-_-_0_1).
-
-## Potentially Legal Position Reachability by Seed - White to Move
-
-This is the same seed experiment, restricted to White-to-move positions. Again, the reached count is a lower bound for legal positions from the chosen original-square seed, not a complete classification of legal and illegal positions.
-
-### All potentially legal positions
-
-| Material class | Potentially legal White-to-move positions | Reached from seed | Unreached from seed | Unreached White-to-move in-check states | Unreached White-to-move non-check states |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `KRvK` | 175,168 | 175,168 | 0 | 0 | 0 |
-| `KQvK` | 144,508 | 144,508 | 0 | 0 | 0 |
-| `KBNvK(light bishop)` | 5,437,752 | 5,436,492 | 1,260 | 0 | 1,260 |
-| `KBBvK(opposite bishops)` | 2,504,128 | 2,503,560 | 568 | 0 | 568 |
-| `KRvKB(light bishop)` | 5,390,364 | 5,355,110 | 35,254 | 35,154 | 100 |
-| `KRvKN` | 10,780,728 | 10,780,352 | 376 | 376 | 0 |
-
-### Potentially legal positions reduced to representative cases
-
-| Material class | Potentially legal White-to-move representative cases | Reached from seed representative cases | Unreached from seed representative cases | Unreached White-to-move in-check representative cases | Unreached White-to-move non-check representative cases |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `KRvK` | 21,959 | 21,959 | 0 | 0 | 0 |
-| `KQvK` | 18,081 | 18,081 | 0 | 0 | 0 |
-| `KBNvK(light bishop)` | 1,359,578 | 1,359,263 | 315 | 0 | 315 |
-| `KBBvK(opposite bishops)` | 626,032 | 625,961 | 71 | 0 | 71 |
-| `KRvKB(light bishop)` | 1,347,906 | 1,339,063 | 8,843 | 8,816 | 27 |
-| `KRvKN` | 1,347,906 | 1,347,859 | 47 | 47 | 0 |
-
 ## External Count Cross-Checks
 
 The potentially legal position counts can be checked against the Syzygy tablebases. Syzygy uses Kirill Kryukov's [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/) (NULP) definition. In that definition, a position includes side to move, castling rights, and en-passant rights, and "unique" means an equivalence class under easy symmetries such as board mirroring, board rotation, and color swapping. NULP looks at potentially legal positions as we do, thus the comparison is valid.
@@ -360,14 +225,12 @@ Implemented:
     
 *   last-move illegality classification for the local white-to-move exception representatives;
     
-*   seed strict-legality checks for `KRvK`, `KQvK`, `KBNvK(light bishop)`, `KBBvK(opposite bishops)`, `KRvKB(light bishop)`, and `KRvKN`;
-    
 *   exposition draft in [docs/basic-checkmate-helpmate-exposition.md](docs/basic-checkmate-helpmate-exposition.md).
     
 
 Not yet implemented:
 
-*   a complete strict-legality classification for all unreached in-check states;
+*   machine-checkable illegality certificates for the local exception representatives;
     
 *   machine-readable exported result tables and representative FEN sets.
     
