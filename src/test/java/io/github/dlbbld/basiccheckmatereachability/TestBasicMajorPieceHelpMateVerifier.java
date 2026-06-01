@@ -21,6 +21,7 @@ class TestBasicMajorPieceHelpMateVerifier {
     assertEquals(216, result.verifiedTerminalCount());
     assertEquals(398416, result.verifiedWitnessCount());
     assertEquals(223248, result.verifiedTheoremRootCount());
+    assertEquals(13, result.maximumWhiteToMoveDistance());
     assertEquals(14, result.maximumDistance());
   }
 
@@ -37,6 +38,7 @@ class TestBasicMajorPieceHelpMateVerifier {
     assertEquals(364, result.verifiedTerminalCount());
     assertEquals(364796, result.verifiedWitnessCount());
     assertEquals(220288, result.verifiedTheoremRootCount());
+    assertEquals(13, result.maximumWhiteToMoveDistance());
     assertEquals(14, result.maximumDistance());
   }
 }

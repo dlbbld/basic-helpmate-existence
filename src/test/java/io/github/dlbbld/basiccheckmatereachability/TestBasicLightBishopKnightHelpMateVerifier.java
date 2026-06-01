@@ -18,6 +18,7 @@ class TestBasicLightBishopKnightHelpMateVerifier {
     assertEquals(232, result.verifiedTerminalCount());
     assertEquals(12256830, result.verifiedWitnessCount());
     assertEquals(6819138, result.verifiedTheoremRootCount());
+    assertEquals(15, result.maximumWhiteToMoveDistance());
     assertEquals(16, result.maximumDistance());
   }
 }

@@ -44,7 +44,7 @@ final class BasicMajorPieceHelpMateVerifier {
 
     return new VerificationResult(whiteMajorPiece, states.size(), checkmates.size(), certificate.winning().size(),
         certificate.witnessByState().size(), verifiedTerminalCount, verifiedWitnessCount, theoremRootCount,
-        certificate.maximumDistance());
+        maximumDistanceForHavingMove(certificate, Side.WHITE), certificate.maximumDistance());
   }
 
   private static Set<MajorPieceState> enumerateLegalStates(WhiteMajorPiece whiteMajorPiece) {
@@ -200,6 +200,16 @@ final class BasicMajorPieceHelpMateVerifier {
     return result;
   }
 
+  private static int maximumDistanceForHavingMove(Certificate certificate, Side havingMove) {
+    var result = 0;
+    for (final MajorPieceState state : certificate.winning()) {
+      if (state.havingMove() == havingMove) {
+        result = Math.max(result, Nulls.get(certificate.distanceByState(), state));
+      }
+    }
+    return result;
+  }
+
   private static boolean hasMaterialPreservingMove(MajorPieceState state, Set<MoveSpecification> legalMoves) {
     for (final MoveSpecification move : legalMoves) {
       if (!capturesMajorPiece(state, move)) {
@@ -243,7 +253,7 @@ final class BasicMajorPieceHelpMateVerifier {
 
   record VerificationResult(WhiteMajorPiece whiteMajorPiece, int legalStateCount, int terminalCheckmateCount,
       int winningStateCount, int witnessStateCount, int verifiedTerminalCount, int verifiedWitnessCount,
-      int verifiedTheoremRootCount, int maximumDistance) {
+      int verifiedTheoremRootCount, int maximumWhiteToMoveDistance, int maximumDistance) {
   }
 
   private record Certificate(Set<MajorPieceState> winning, Map<MajorPieceState, MoveSpecification> witnessByState,

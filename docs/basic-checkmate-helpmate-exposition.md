@@ -9,7 +9,7 @@ Draft, 20 May 2026
 
 FIDE's dead-position rule is phrased in terms of existence: a position is dead if neither player can checkmate the opponent by any possible series of legal moves. This is the right chess rule, but it is not a small local material rule. Miguel Ambrona's Chess Helpmate Analyzer (CHA) gives a practical and sound approach to the problem by searching for helpmate sequences and by recognizing large classes of unwinnable positions statically. In high-level implementations, however, some elementary endgames can still be annoying: the position is obviously part of a classical mating material class, but a blind helpmate search may need to discover a long cooperative line.
 
-This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether White has a cooperative continuation to checkmate. The resulting black-to-move statement is intentionally modest and useful: excluding positions that are already checkmate or stalemate, if Black has at least one first move that does not immediately capture a mating piece, then White has a helpmate. The statement was checked for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The same computation also supports the white-to-move statement: every strictly game-legal, ongoing white-to-move position in these classes has a helpmate for White. The remaining local white-to-move exception representatives in KBBvK and KBNvK are retro-illegal by a last-move argument.
+This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether the side with mating material has a cooperative continuation to checkmate. Let `W` be the side with mating material, the winner in the timeout application, and let `L` be the defending side. The proved statement is: in every ongoing legal position in the covered classes, if `W` is to move then `W` has a helpmate; if `L` is to move then `W` has a helpmate unless every legal first move by `L` captures one of `W`'s non-king mating pieces. The computation is performed with White as `W` for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The corresponding statements with Black as `W` follow by colour symmetry.
 
 ## 1. Motivation
 
@@ -27,11 +27,11 @@ The small gap addressed here is not mathematical completeness of CHA. It is engi
 
 ## 2. Terminology
 
-Throughout this draft, "White has a helpmate" means:
+Throughout this draft, "`W` has a helpmate" means:
 
-> There exists a finite sequence of legal moves, starting from the given position, after which Black is checkmated.
+> There exists a finite sequence of legal moves, starting from the given position, after which the opponent's king is checkmated.
 
-This is cooperative reachability, not adversarial winning. Black is not trying to avoid mate. Black is only required to make legal moves.
+This is cooperative reachability, not adversarial winning. `L` is not trying to avoid mate. `L` is only required to make legal moves.
 
 The word "legal" has two layers.
 
@@ -41,7 +41,28 @@ Strict game legality means that the position can arise from the normal initial c
 
 This distinction matters, but it does not invalidate the intended shortcut. If a strictly legal position reaches another position by legal moves, the target is also strictly legal. Therefore, a strictly illegal checkmate seed cannot create a false helpmate path from a strictly legal root when all graph edges are genuine legal moves. Illegal components remain outside the game-reachable component.
 
-## 3. High-level algorithmic picture
+## 3. The statement proved
+
+Let `W` be the side with the mating material, the winner in the timeout application, and let `L` be the defending side. In every ongoing legal position in the covered material classes:
+
+1. If `W` is to move, then `W` has a helpmate.
+2. If `L` is to move, then `W` has a helpmate unless every legal first move by `L` captures one of `W`'s non-king mating pieces.
+
+For White as the mating side this says:
+
+1a. White to move: White has a helpmate.
+
+1b. Black to move: White has a helpmate unless every legal first move by Black captures one of White's non-king mating pieces.
+
+For Black as the mating side this says:
+
+2a. Black to move: Black has a helpmate.
+
+2b. White to move: Black has a helpmate unless every legal first move by White captures one of Black's non-king mating pieces.
+
+The computation is performed with White as `W` for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK, KRvKB, and KRvKN. The Black-side statements follow by colour symmetry of chess: swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence. The light-square bishop cases cover the corresponding dark-square bishop cases by board symmetry.
+
+## 4. High-level algorithmic picture
 
 There are two algorithms in the artifact.
 
@@ -51,7 +72,7 @@ The second algorithm verifies the theorem. During the retrograde computation, th
 
 The recorded distance is the length of this shortest witnessed chain in plies inside the material-preserving graph. The maximum witness distance is not a rule-theoretic depth-to-mate under best defense. It is the largest certificate layer needed by the cooperative reachability proof.
 
-## 4. The finite material-class graph
+## 5. The finite material-class graph
 
 For each material class, we enumerate every placement of the relevant pieces and the side to move. A state is retained if it passes the local legality test. For example, KRvK contains:
 
@@ -81,33 +102,6 @@ The terminal winning states are all states in which Black is checkmated. From th
 The result is exact for the enumerated graph: a state is marked winning if and only if some material-preserving legal path leads from it to a black-checkmate state.
 
 This is not the same as `FindHelpmateExhaust`. The computation is a whole-graph dynamic program over a fixed material class. In exchange for being specialized, it avoids repeated rediscovery of the same suffixes.
-
-## 5. The proposed theorem
-
-For a material class `M`, let `G_M` be the local legal material-preserving move graph. Let `W_M` be the reverse closure of the black-checkmate states. A black-to-move root is called ongoing if it is neither already checkmate nor stalemate.
-
-The proposed shortcut theorem has the following form:
-
-> In material class `M`, every ongoing black-to-move state belongs to `W_M`, unless every legal first move by Black captures one of White's mating pieces.
-
-Equivalently: if Black has at least one legal first move that keeps the mating material on the board, then White has a cooperative continuation to checkmate.
-
-This is intentionally a first-move statement. If Black is forced to capture the rook, queen, bishop, or knight at once, the material class changes and this particular certificate should not be used. The surrounding unwinnability algorithm can then analyze the resulting reduced material instead.
-
-The white-to-move question uses the same set `W_M`, but with two additional
-bookkeeping distinctions. First, a root where White has already been checkmated
-or stalemated is not an ongoing game root. Second, in KRvKB and KRvKN, a White
-move that captures Black's bishop or knight is not an obstruction: it reduces
-the position to the already verified KRvK case. With these distinctions, KRvK,
-KQvK, KRvKB(light), and KRvKN have no ongoing local white-to-move exceptions.
-KBBvK and KBNvK retain small local exception sets. Those exceptions are not part
-of the black-to-move theorem, and they are not strict game exceptions: their
-canonical representatives are retro-illegal by a last-move black-king argument.
-
-The light-bishop formulations are representatives of a symmetry class. The
-dark-square bishop cases are obtained by board symmetry, and positions where
-Black has the mating material are obtained by swapping colours. Thus the checked
-representatives cover the corresponding symmetric chess cases.
 
 ## 6. Why a direct proof is difficult
 

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 
@@ -36,24 +37,34 @@ public class GenerateWhiteToMoveReachabilitySummary {
 
   public static void main(String[] args) {
     final var rook = BasicMajorPieceHelpMateAnalysis.analyze(ROOK);
+    final var rookVerification = BasicMajorPieceHelpMateVerifier.verifyKrvK();
+    final var rookTerminals = whiteTerminalCounts(ROOK);
     print("KRvK", rook.whiteToMoveStateCount(), rook.unwinnableWhiteToMoveStateCount(),
         rook.unwinnableWhiteToMoveRepresentatives().size());
 
     final var queen = BasicMajorPieceHelpMateAnalysis.analyze(QUEEN);
+    final var queenVerification = BasicMajorPieceHelpMateVerifier.verifyKqvK();
+    final var queenTerminals = whiteTerminalCounts(QUEEN);
     print("KQvK", queen.whiteToMoveStateCount(), queen.unwinnableWhiteToMoveStateCount(),
         queen.unwinnableWhiteToMoveRepresentatives().size());
 
     final var lightBishopKnight = BasicLightBishopKnightHelpMateAnalysis.analyze();
+    final var lightBishopKnightVerification = BasicLightBishopKnightHelpMateVerifier.verify();
+    final var lightBishopKnightTerminals = whiteTerminalCountsKbnvK();
     print("KBNvK(light bishop)", lightBishopKnight.whiteToMoveStateCount(),
         lightBishopKnight.unwinnableWhiteToMoveStateCount(),
         lightBishopKnight.unwinnableWhiteToMoveRepresentatives().size());
 
     final var oppositeBishops = BasicOppositeBishopsHelpMateAnalysis.analyze();
+    final var oppositeBishopsVerification = BasicFourPieceHelpMateVerifier.verifyKbbvK();
+    final var oppositeBishopsTerminals = whiteTerminalCountsKbbvK();
     print("KBBvK(opposite bishops)", oppositeBishops.whiteToMoveStateCount(),
         oppositeBishops.unwinnableWhiteToMoveStateCount(),
         oppositeBishops.unwinnableWhiteToMoveRepresentatives().size());
 
     final var rookLightBishop = BasicRookLightBishopHelpMateAnalysis.analyze();
+    final var rookLightBishopVerification = BasicFourPieceHelpMateVerifier.verifyKrvKbLightBishop();
+    final var rookLightBishopTerminals = whiteTerminalCountsKrvKb();
     print("KRvKB(light bishop)", rookLightBishop.whiteToMoveStateCount(),
         rookLightBishop.unwinnableWhiteToMoveStateCount(),
         rookLightBishop.unwinnableWhiteToMoveRepresentatives().size());
@@ -61,9 +72,63 @@ public class GenerateWhiteToMoveReachabilitySummary {
         rookLightBishop.reducibleWhiteToMoveStateCount());
 
     final var rookKnight = BasicRookKnightHelpMateAnalysis.analyze();
+    final var rookKnightVerification = BasicFourPieceHelpMateVerifier.verifyKrvKn();
+    final var rookKnightTerminals = whiteTerminalCountsKrvKn();
     print("KRvKN", rookKnight.whiteToMoveStateCount(), rookKnight.unwinnableWhiteToMoveStateCount(),
         rookKnight.unwinnableWhiteToMoveRepresentatives().size());
     printNonOngoingOrReducible(rookKnight.endedWhiteToMoveStateCount(), rookKnight.reducibleWhiteToMoveStateCount());
+
+    System.out.println();
+    System.out.println("White-to-move all potentially legal positions:");
+    System.out.println(
+        "| Material class | Potentially legal positions | Checkmates | Stalemates | Counterexamples | Maximum helpmate plies |");
+    System.out.println("| --- | ---: | ---: | ---: | --- | ---: |");
+    printWhiteTableRow("KRvK", rook.whiteToMoveStateCount(), rookTerminals.checkmates(),
+        rookTerminals.stalemates(), rook.unwinnableWhiteToMoveStateCount(),
+        rookVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KQvK", queen.whiteToMoveStateCount(), queenTerminals.checkmates(),
+        queenTerminals.stalemates(), queen.unwinnableWhiteToMoveStateCount(),
+        queenVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KBBvK, opposite bishops", oppositeBishops.whiteToMoveStateCount(),
+        oppositeBishopsTerminals.checkmates(), oppositeBishopsTerminals.stalemates(),
+        oppositeBishops.unwinnableWhiteToMoveStateCount(), oppositeBishopsVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KBNvK, light bishop", lightBishopKnight.whiteToMoveStateCount(),
+        lightBishopKnightTerminals.checkmates(), lightBishopKnightTerminals.stalemates(),
+        lightBishopKnight.unwinnableWhiteToMoveStateCount(),
+        lightBishopKnightVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KRvKB(light bishop)", rookLightBishop.whiteToMoveStateCount(),
+        rookLightBishopTerminals.checkmates(), rookLightBishopTerminals.stalemates(),
+        rookLightBishop.unwinnableWhiteToMoveStateCount(), rookLightBishopVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KRvKN", rookKnight.whiteToMoveStateCount(), rookKnightTerminals.checkmates(),
+        rookKnightTerminals.stalemates(), rookKnight.unwinnableWhiteToMoveStateCount(),
+        rookKnightVerification.maximumWhiteToMoveDistance());
+
+    System.out.println();
+    System.out.println("White-to-move potentially legal positions reduced to representative cases:");
+    System.out.println(
+        "| Material class | Potentially legal positions | Checkmates | Stalemates | Counterexamples | Maximum helpmate plies |");
+    System.out.println("| --- | ---: | ---: | ---: | --- | ---: |");
+    printWhiteTableRow("KRvK", 21959, rookTerminals.checkmateRepresentatives(),
+        rookTerminals.stalemateRepresentatives(), rook.unwinnableWhiteToMoveRepresentatives().size(),
+        rookVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KQvK", 18081, queenTerminals.checkmateRepresentatives(),
+        queenTerminals.stalemateRepresentatives(), queen.unwinnableWhiteToMoveRepresentatives().size(),
+        queenVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KBBvK, opposite bishops", 626032, oppositeBishopsTerminals.checkmateRepresentatives(),
+        oppositeBishopsTerminals.stalemateRepresentatives(),
+        oppositeBishops.unwinnableWhiteToMoveRepresentatives().size(),
+        oppositeBishopsVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KBNvK, light bishop", 1359578, lightBishopKnightTerminals.checkmateRepresentatives(),
+        lightBishopKnightTerminals.stalemateRepresentatives(),
+        lightBishopKnight.unwinnableWhiteToMoveRepresentatives().size(),
+        lightBishopKnightVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KRvKB(light bishop)", 1347906, rookLightBishopTerminals.checkmateRepresentatives(),
+        rookLightBishopTerminals.stalemateRepresentatives(),
+        rookLightBishop.unwinnableWhiteToMoveRepresentatives().size(),
+        rookLightBishopVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KRvKN", 1347906, rookKnightTerminals.checkmateRepresentatives(),
+        rookKnightTerminals.stalemateRepresentatives(), rookKnight.unwinnableWhiteToMoveRepresentatives().size(),
+        rookKnightVerification.maximumWhiteToMoveDistance());
 
     System.out.println();
     System.out.println("Black-to-move local exception:");
@@ -94,6 +159,12 @@ public class GenerateWhiteToMoveReachabilitySummary {
   private static void printNonOngoingOrReducible(int endedWhiteToMoveStates, int reducibleWhiteToMoveStates) {
     System.out.printf("  ended white-to-move %,d, reducible by White capture %,d%n", endedWhiteToMoveStates,
         reducibleWhiteToMoveStates);
+  }
+
+  private static void printWhiteTableRow(String materialClass, int positions, int checkmates, int stalemates,
+      int counterexamples, int maximumHelpmatePlies) {
+    System.out.printf("| `%s` | %,d | %,d | %,d | %s | %,d |%n", materialClass, positions, checkmates, stalemates,
+        counterexamples == 0 ? "0" : String.format("%,d illegal", counterexamples), maximumHelpmatePlies);
   }
 
   private static void printPositionRow(String materialClass, String fen, String strictGameStatus) {
@@ -141,6 +212,145 @@ public class GenerateWhiteToMoveReachabilitySummary {
     final String sideToMove = fen.split(" ")[1].equals("w") ? "white" : "black";
     return "https://fen2image.chessvision.ai/" + fen.strip().replace(" ", "%20") + "?turn=" + sideToMove
         + "&pov=" + sideToMove;
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCounts(BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece piece) {
+    final var accumulator = new WhiteTerminalAccumulator(0, 1, 2, 3, 4, 5, 6, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteMajor : Square.REAL) {
+        if (whiteMajor == whiteKing) {
+          continue;
+        }
+        for (final Square blackKing : Square.REAL) {
+          if (blackKing == whiteKing || blackKing == whiteMajor) {
+            continue;
+          }
+          final long whiteRooks = piece == ROOK ? bit(whiteMajor) : 0L;
+          final long whiteQueens = piece == QUEEN ? bit(whiteMajor) : 0L;
+          final var position = new BitboardPosition(0L, whiteRooks, 0L, 0L, whiteQueens, bit(whiteKing), 0L, 0L,
+              0L, 0L, 0L, bit(blackKing));
+          accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare(piece.fenChar(), whiteMajor),
+              new PieceOnSquare('k', blackKing));
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCountsKbbvK() {
+    final var accumulator = new WhiteTerminalAccumulator(0, 1, 2, 3, 4, 5, 6, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteLightBishop : Square.REAL) {
+        if (!isLightSquare(whiteLightBishop) || whiteLightBishop == whiteKing) {
+          continue;
+        }
+        for (final Square whiteDarkBishop : Square.REAL) {
+          if (isLightSquare(whiteDarkBishop) || whiteDarkBishop == whiteKing || whiteDarkBishop == whiteLightBishop) {
+            continue;
+          }
+          for (final Square blackKing : Square.REAL) {
+            if (blackKing == whiteKing || blackKing == whiteLightBishop || blackKing == whiteDarkBishop) {
+              continue;
+            }
+            final var position = new BitboardPosition(0L, 0L, 0L,
+                bit(whiteLightBishop) | bit(whiteDarkBishop), 0L, bit(whiteKing), 0L, 0L, 0L, 0L, 0L,
+                bit(blackKing));
+            accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('B', whiteLightBishop),
+                new PieceOnSquare('B', whiteDarkBishop), new PieceOnSquare('k', blackKing));
+          }
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCountsKbnvK() {
+    final var accumulator = new WhiteTerminalAccumulator(0, 3, 4, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteBishop : Square.REAL) {
+        if (!isLightSquare(whiteBishop) || whiteBishop == whiteKing) {
+          continue;
+        }
+        for (final Square whiteKnight : Square.REAL) {
+          if (whiteKnight == whiteKing || whiteKnight == whiteBishop) {
+            continue;
+          }
+          for (final Square blackKing : Square.REAL) {
+            if (blackKing == whiteKing || blackKing == whiteBishop || blackKing == whiteKnight) {
+              continue;
+            }
+            final var position = new BitboardPosition(0L, 0L, bit(whiteKnight), bit(whiteBishop), 0L,
+                bit(whiteKing), 0L, 0L, 0L, 0L, 0L, bit(blackKing));
+            accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('B', whiteBishop),
+                new PieceOnSquare('N', whiteKnight), new PieceOnSquare('k', blackKing));
+          }
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCountsKrvKb() {
+    final var accumulator = new WhiteTerminalAccumulator(0, 3, 4, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteRook : Square.REAL) {
+        if (whiteRook == whiteKing) {
+          continue;
+        }
+        for (final Square blackKing : Square.REAL) {
+          if (blackKing == whiteKing || blackKing == whiteRook) {
+            continue;
+          }
+          for (final Square blackBishop : Square.REAL) {
+            if (!isLightSquare(blackBishop) || blackBishop == whiteKing || blackBishop == whiteRook
+                || blackBishop == blackKing) {
+              continue;
+            }
+            final var position = new BitboardPosition(0L, bit(whiteRook), 0L, 0L, 0L, bit(whiteKing), 0L, 0L, 0L,
+                bit(blackBishop), 0L, bit(blackKing));
+            accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('R', whiteRook),
+                new PieceOnSquare('k', blackKing), new PieceOnSquare('b', blackBishop));
+          }
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCountsKrvKn() {
+    final var accumulator = new WhiteTerminalAccumulator(0, 1, 2, 3, 4, 5, 6, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteRook : Square.REAL) {
+        if (whiteRook == whiteKing) {
+          continue;
+        }
+        for (final Square blackKing : Square.REAL) {
+          if (blackKing == whiteKing || blackKing == whiteRook) {
+            continue;
+          }
+          for (final Square blackKnight : Square.REAL) {
+            if (blackKnight == whiteKing || blackKnight == whiteRook || blackKnight == blackKing) {
+              continue;
+            }
+            final var position = new BitboardPosition(0L, bit(whiteRook), 0L, 0L, 0L, bit(whiteKing), 0L, 0L,
+                bit(blackKnight), 0L, 0L, bit(blackKing));
+            accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('R', whiteRook),
+                new PieceOnSquare('k', blackKing), new PieceOnSquare('n', blackKnight));
+          }
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static boolean isLightSquare(Square square) {
+    final var file = square.ordinal() % 8;
+    final var rank = square.ordinal() / 8;
+    return (file + rank) % 2 == 1;
+  }
+
+  private static long bit(Square square) {
+    return 1L << square.ordinal();
   }
 
   private static String toFen(BasicOppositeBishopsHelpMateAnalysis.OppositeBishopsState state) {
@@ -197,6 +407,102 @@ public class GenerateWhiteToMoveReachabilitySummary {
     }
     sb.append(' ').append(havingMove == Side.WHITE ? 'w' : 'b').append(" - - 0 1");
     return sb.toString();
+  }
+
+  private static PieceOnSquare transform(PieceOnSquare piece, int transformIndex) {
+    return new PieceOnSquare(piece.fenChar(), transform(piece.square(), transformIndex));
+  }
+
+  private static Square transform(Square square, int transformIndex) {
+    final var file = square.ordinal() % 8;
+    final var rank = square.ordinal() / 8;
+    final int transformedFile;
+    final int transformedRank;
+    switch (transformIndex) {
+      case 0 -> {
+        transformedFile = file;
+        transformedRank = rank;
+      }
+      case 1 -> {
+        transformedFile = 7 - file;
+        transformedRank = rank;
+      }
+      case 2 -> {
+        transformedFile = file;
+        transformedRank = 7 - rank;
+      }
+      case 3 -> {
+        transformedFile = 7 - file;
+        transformedRank = 7 - rank;
+      }
+      case 4 -> {
+        transformedFile = rank;
+        transformedRank = file;
+      }
+      case 5 -> {
+        transformedFile = 7 - rank;
+        transformedRank = file;
+      }
+      case 6 -> {
+        transformedFile = rank;
+        transformedRank = 7 - file;
+      }
+      case 7 -> {
+        transformedFile = 7 - rank;
+        transformedRank = 7 - file;
+      }
+      default -> throw new IllegalArgumentException("transformIndex out of range: " + transformIndex);
+    }
+    return Square.REAL.get(transformedRank * 8 + transformedFile);
+  }
+
+  private static String canonicalFen(int[] transformIndexes, PieceOnSquare... pieces) {
+    String result = null;
+    for (final int transformIndex : transformIndexes) {
+      final PieceOnSquare[] transformed = new PieceOnSquare[pieces.length];
+      for (var i = 0; i < pieces.length; i++) {
+        transformed[i] = transform(pieces[i], transformIndex);
+      }
+      final var fen = toFen(Side.WHITE, transformed);
+      if (result == null || fen.compareTo(result) < 0) {
+        result = fen;
+      }
+    }
+    return result;
+  }
+
+  private static final class WhiteTerminalAccumulator {
+    private final int[] transformIndexes;
+    private int checkmates;
+    private int stalemates;
+    private final Set<String> checkmateRepresentatives = new HashSet<>();
+    private final Set<String> stalemateRepresentatives = new HashSet<>();
+
+    WhiteTerminalAccumulator(int... transformIndexes) {
+      this.transformIndexes = transformIndexes.clone();
+    }
+
+    void add(BitboardPosition position, PieceOnSquare... pieces) {
+      if (position.isInCheck(Side.BLACK) || !position.legalMoves(Side.WHITE, 0L).isEmpty()) {
+        return;
+      }
+      if (position.isInCheck(Side.WHITE)) {
+        checkmates++;
+        checkmateRepresentatives.add(canonicalFen(transformIndexes, pieces));
+      } else {
+        stalemates++;
+        stalemateRepresentatives.add(canonicalFen(transformIndexes, pieces));
+      }
+    }
+
+    WhiteTerminalCounts toCounts() {
+      return new WhiteTerminalCounts(checkmates, stalemates, checkmateRepresentatives.size(),
+          stalemateRepresentatives.size());
+    }
+  }
+
+  private record WhiteTerminalCounts(int checkmates, int stalemates, int checkmateRepresentatives,
+      int stalemateRepresentatives) {
   }
 
   private record PieceOnSquare(char fenChar, Square square) {

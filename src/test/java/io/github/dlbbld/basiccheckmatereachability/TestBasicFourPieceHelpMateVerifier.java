@@ -22,6 +22,7 @@ class TestBasicFourPieceHelpMateVerifier {
     assertEquals(1552, result.verifiedTerminalCount());
     assertEquals(5958624, result.verifiedWitnessCount());
     assertEquals(3454520, result.verifiedTheoremRootCount());
+    assertEquals(15, result.maximumWhiteToMoveDistance());
     assertEquals(16, result.maximumDistance());
   }
 
@@ -38,6 +39,7 @@ class TestBasicFourPieceHelpMateVerifier {
     assertEquals(3264, result.verifiedTerminalCount());
     assertEquals(11299536, result.verifiedWitnessCount());
     assertEquals(5909180, result.verifiedTheoremRootCount());
+    assertEquals(13, result.maximumWhiteToMoveDistance());
     assertEquals(14, result.maximumDistance());
   }
 
@@ -54,6 +56,7 @@ class TestBasicFourPieceHelpMateVerifier {
     assertEquals(9328, result.verifiedTerminalCount());
     assertEquals(23299408, result.verifiedWitnessCount());
     assertEquals(12518712, result.verifiedTheoremRootCount());
+    assertEquals(13, result.maximumWhiteToMoveDistance());
     assertEquals(14, result.maximumDistance());
   }
 }

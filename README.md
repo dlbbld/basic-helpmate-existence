@@ -1,22 +1,43 @@
 # Basic Checkmate Reachability
 
-This project delivers a finite-state proof by code, supplemented by manually proving some positions as illegal, for two strict-game conclusions for ongoing games in the material classes KRvK, KQvK, KBBvK (opposite bishops), KBNvK, KRvKB and KRvKN.
+This project delivers a finite-state proof by code, supplemented by manually proving some positions as illegal, for basic helpmate reachability in selected low-material chess endgames. The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
 
-First conclusion: White having the move in such positions always has a helpmate.
+## Theorem
 
-Second conclusion: With Black having the move, White has a helpmate except for the positions where Black must forcibly capture a piece on its first move.
+Let `W` be the side with the mating material, the winner in the timeout application, and let `L` be the defending side. In every ongoing legal position in these material classes:
 
-That the game is ongoing is of course a necessary condition. If the position is checkmate or stalemate, the game has already ended - the question for helpmate existence in this case is not applicable.
+1. If `W` is to move, then `W` has a helpmate.
+2. If `L` is to move, then `W` has a helpmate unless every legal first move by `L` captures one of `W`'s non-king mating pieces.
 
-Most notably the theorem only applies to positions which are legal, that is, positions which can arise from the initial chess position by a legal series of moves.
+Equivalently, spelled out by colour:
 
-## Extension
+### White has the mating material
 
-The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. Analyzing the light-square bishop case is enough because the dark-square bishop case is obtained by board symmetry. If Black, rather than White, has the mating material, the statement is obtained by swapping the colours. This is the standard reduction to one representative from each symmetry class. As such, the statement also applies analogously to the material classes KvKR, KvKQ, KvKBB (opposite bishops), KvKBN, KBvKR and KNvKR.
+1a. White to move: White has a helpmate.
+
+1b. Black to move: White has a helpmate unless every legal first move by Black captures one of White's non-king mating pieces.
+
+### Black has the mating material
+
+2a. Black to move: Black has a helpmate.
+
+2b. White to move: Black has a helpmate unless every legal first move by White captures one of Black's non-king mating pieces.
+
+The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves.
+
+The computation is performed with White as `W` for:
+
+`KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`.
+
+The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence. Thus the theorem also covers:
+
+`KvKR`, `KvKQ`, `KvKBB` with opposite-coloured bishops, `KvKBN`, `KBvKR`, and `KNvKR`.
+
+The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop case is obtained by board symmetry, so the light-square computation is sufficient.
 
 ## Motivation
 
-In chess, the FIDE rule on flag fall asks whether the opponent still has a helpmate; only then is the game a loss for the flagging player. This motivates checking the case where White has mating material and Black flags. The conclusion identifies when Black loses, by performing one move, without having to construct a helpmate.
+In chess, the FIDE rule on flag fall asks whether the opponent still has a helpmate; only then is the game a loss for the flagging player. This motivates checking whether the side with mating material has any possible cooperative continuation to checkmate, without having to construct such a continuation during adjudication.
 
 For familiar material classes this sounds almost obvious. One might try to give a direct geometric proof by separating cases such as "king in the corner", "king on the edge", and "king in the middle". In practice this is surprisingly fragile. Side to move, immediate checks, stalemates, forced captures, and positions being illegal or not all matter.
 
@@ -111,55 +132,55 @@ On a notebook with a per 2026 average performance, this test suite takes roughly
 
 White-to-move local reachability:
 
-| Material class | White-to-move states | Unwinnable white-to-move states | Canonical unwinnable representatives |
-| --- | --- | --- | --- |
-| `KRvK` | 175,168 | 0 | 0 |
-| `KQvK` | 144,508 | 0 | 0 |
-| `KBBvK`, opposite bishops | 2,504,128 | 24 | 3 |
-| `KBNvK`, light bishop | 5,437,752 | 60 | 15 |
-| `KRvKB(light bishop)` | 5,390,364 | 0 | 0 |
-| `KRvKN` | 10,780,728 | 0 | 0 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Counterexamples | Maximum helpmate plies |
+| --- | ---: | ---: | ---: | --- | ---: |
+| `KRvK` | 175,168 | 0 | 0 | 0 | 13 |
+| `KQvK` | 144,508 | 0 | 0 | 0 | 13 |
+| `KBBvK`, opposite bishops | 2,504,128 | 0 | 0 | 24 illegal | 15 |
+| `KBNvK`, light bishop | 5,437,752 | 0 | 0 | 60 illegal | 15 |
+| `KRvKB(light bishop)` | 5,390,364 | 0 | 0 | 0 | 13 |
+| `KRvKN` | 10,780,728 | 8 | 0 | 0 | 13 |
 
-The nonzero white-to-move exception rows are local material-class artifacts. The canonical representatives are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. The witness verifier already checks all fixed-material white-to-move winning states, because the stored witness edges are side-to-move agnostic.
+The nonzero white-to-move counterexample rows are local material-class artifacts. The representative cases are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. The witness verifier already checks all fixed-material white-to-move winning states, because the stored witness edges are side-to-move agnostic.
 
 For the rook endgames with a black defender, the corrected classification also records non-exceptional local roots outside the fixed material-preserving graph: `KRvKB(light bishop)` has 8 White-to-move states where White captures the bishop and reduces to the verified `KRvK` case; `KRvKN` has 8 already-ended White-to-move states and 24 states where White captures the knight and reduces to `KRvK`. The tests replay each such White capture with Ashlar's legal move generator and then check that the resulting `KRvK` position is a verified helpmate root for White.
 
 ### Potentially legal positions reduced to representative cases
 
-| Material class | Representative White-to-move positions | Unwinnable representative cases |
-| --- | ---: | ---: |
-| `KRvK` | 21,959 | 0 |
-| `KQvK` | 18,081 | 0 |
-| `KBBvK`, opposite bishops | 626,032 | 3 |
-| `KBNvK`, light bishop | 1,359,578 | 15 |
-| `KRvKB(light bishop)` | 1,347,906 | 0 |
-| `KRvKN` | 1,347,906 | 0 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Counterexamples | Maximum helpmate plies |
+| --- | ---: | ---: | ---: | --- | ---: |
+| `KRvK` | 21,959 | 0 | 0 | 0 | 13 |
+| `KQvK` | 18,081 | 0 | 0 | 0 | 13 |
+| `KBBvK`, opposite bishops | 626,032 | 0 | 0 | 3 illegal | 15 |
+| `KBNvK`, light bishop | 1,359,578 | 0 | 0 | 15 illegal | 15 |
+| `KRvKB(light bishop)` | 1,347,906 | 0 | 0 | 0 | 13 |
+| `KRvKN` | 1,347,906 | 1 | 0 | 0 | 13 |
 
 ## Current Results for Black to move
 
-Counts are over potentially legal positions. "Maximum witness distance" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class. Thus, in the `KRvKB(light bishop)` and `KRvKN` rows, the stored black-to-move witnesses do not use White captures of the black bishop or knight as a shortcut to `KRvK`. Such captures are handled separately in the White-to-move classification, where they are needed only for local positions outside the fixed material-class graph.
+Counts are over potentially legal positions. "Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class. Thus, in the `KRvKB(light bishop)` and `KRvKN` rows, the stored black-to-move witnesses do not use White captures of the black bishop or knight as a shortcut to `KRvK`. Such captures are handled separately in the White-to-move classification, where they are needed only for local positions outside the fixed material-class graph.
 
 ### All potentially legal positions
 
-| Material class | Potentially legal states | Black-to-move states | Black checkmates | Stalemates | Forced first capture | Counterexamples | Maximum witness distance |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `KRvK` | 399,112 | 223,944 | 216 | 68 | 412 | 0 | 14 |
-| `KQvK` | 368,452 | 223,944 | 364 | 872 | 2,420 | 0 | 14 |
-| `KBBvK`, opposite bishops | 5,973,472 | 3,469,344 | 1,552 | 5,320 | 7,952 | 0 | 16 |
-| `KBNvK`, light bishop | 12,268,044 | 6,830,292 | 232 | 6,444 | 4,474 | 4 local states, 1 representative, illegal | 16 |
-| `KRvKB(light bishop)` | 11,306,596 | 5,916,232 | 3,264 | 48 | 3,740 | 0 | 14 |
-| `KRvKN` | 23,315,984 | 12,535,256 | 9,328 | 48 | 7,168 | 0 | 14 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture | Counterexamples | Maximum helpmate plies |
+| --- | ---: | ---: | ---: | ---: | --- | ---: |
+| `KRvK` | 223,944 | 216 | 68 | 412 | 0 | 14 |
+| `KQvK` | 223,944 | 364 | 872 | 2,420 | 0 | 14 |
+| `KBBvK`, opposite bishops | 3,469,344 | 1,552 | 5,320 | 7,952 | 0 | 16 |
+| `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,474 | 4 local states, 1 representative, illegal | 16 |
+| `KRvKB(light bishop)` | 5,916,232 | 3,264 | 48 | 3,740 | 0 | 14 |
+| `KRvKN` | 12,535,256 | 9,328 | 48 | 7,168 | 0 | 14 |
 
 ### Potentially legal positions reduced to representative cases
 
-| Material class | Representative potentially legal states | Representative Black-to-move states | Black checkmates | Stalemates | Forced first capture | Counterexamples | Maximum witness distance |
-| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
-| `KRvK` | 50,015 | 28,056 | 27 | 9 | 54 | 0 | 14 |
-| `KQvK` | 46,137 | 28,056 | 46 | 109 | 305 | 0 | 14 |
-| `KBBvK`, opposite bishops | 1,493,368 | 867,336 | 194 | 665 | 994 | 0 | 16 |
-| `KBNvK`, light bishop | 3,067,466 | 1,707,888 | 58 | 1,611 | 1,121 | 1 illegal | 16 |
-| `KRvKB(light bishop)` | 2,827,104 | 1,479,198 | 816 | 12 | 935 | 0 | 14 |
-| `KRvKN` | 2,915,128 | 1,567,222 | 1,166 | 6 | 896 | 0 | 14 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture | Counterexamples | Maximum helpmate plies |
+| --- | ---: | ---: | ---: | ---: | --- | ---: |
+| `KRvK` | 28,056 | 27 | 9 | 54 | 0 | 14 |
+| `KQvK` | 28,056 | 46 | 109 | 305 | 0 | 14 |
+| `KBBvK`, opposite bishops | 867,336 | 194 | 665 | 994 | 0 | 16 |
+| `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,121 | 1 illegal | 16 |
+| `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 935 | 0 | 14 |
+| `KRvKN` | 1,567,222 | 1,166 | 6 | 896 | 0 | 14 |
 
 The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
 

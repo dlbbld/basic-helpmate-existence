@@ -104,7 +104,8 @@ final class BasicLightBishopKnightHelpMateVerifier {
     final var verifiedTheoremRootCount = verifyTheoremRoots(legalStates, checkmates, winning);
 
     return new VerificationResult(legalStateCount, terminalCheckmateCount, winning.cardinality(),
-        verifiedWitnessCount, verifiedTerminalCount, verifiedWitnessCount, verifiedTheoremRootCount, maximumDistance);
+        verifiedWitnessCount, verifiedTerminalCount, verifiedWitnessCount, verifiedTheoremRootCount,
+        maximumDistanceForHavingMove(winning, distanceByState, WHITE_TO_MOVE), maximumDistance);
   }
 
   private static int calculateCertificate(BitSet legalStates, BitSet winning, int[] witnessByState,
@@ -253,6 +254,16 @@ final class BasicLightBishopKnightHelpMateVerifier {
       }
       if (hasNonCaptureMove && winning.get(state)) {
         result++;
+      }
+    }
+    return result;
+  }
+
+  private static int maximumDistanceForHavingMove(BitSet winning, byte[] distanceByState, int havingMove) {
+    var result = 0;
+    for (var state = winning.nextSetBit(0); state >= 0; state = winning.nextSetBit(state + 1)) {
+      if (havingMove(state) == havingMove) {
+        result = Math.max(result, Byte.toUnsignedInt(distanceByState[state]));
       }
     }
     return result;
@@ -426,7 +437,7 @@ final class BasicLightBishopKnightHelpMateVerifier {
 
   record VerificationResult(int legalStateCount, int terminalCheckmateCount, int winningStateCount,
       int witnessStateCount, int verifiedTerminalCount, int verifiedWitnessCount, int verifiedTheoremRootCount,
-      int maximumDistance) {
+      int maximumWhiteToMoveDistance, int maximumDistance) {
   }
 
   private static final class IntQueue {
