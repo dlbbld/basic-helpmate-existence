@@ -8,6 +8,10 @@ each representative against local Syzygy files with python-chess.
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
+import tempfile
+from contextlib import contextmanager
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,8 +29,14 @@ class Material:
     name: str
     table: str
     expected_unique: int
-    generator: Callable[[], Iterator[tuple[tuple[int, ...], bool]]]
+    generator: Callable[[], Iterator[tuple[tuple["PieceOnSquare", ...], bool]]]
     symmetries: Sequence[int]
+
+
+@dataclass(frozen=True, order=True)
+class PieceOnSquare:
+    symbol: str
+    square: int
 
 
 def main() -> None:
@@ -42,29 +52,58 @@ def main() -> None:
         choices=[material.name for material in materials()],
         help="material class to verify; may be repeated; defaults to all",
     )
+    parser.add_argument(
+        "--isolate-table",
+        action="store_true",
+        help="probe each material through a temporary directory containing only its .rtbw/.rtbz files",
+    )
     parser.add_argument("--progress", type=int, default=250_000, help="print progress every N probed representatives")
     args = parser.parse_args()
 
     tablebase_path = Path(args.tablebase)
     selected = set(args.material or [material.name for material in materials()])
 
-    with chess.syzygy.open_tablebase(tablebase_path) as tablebase:
-        for material in materials():
-            if material.name not in selected:
-                continue
-            verify_material(tablebase, material, args.progress)
+    for material in materials():
+        if material.name not in selected:
+            continue
+        if args.isolate_table:
+            with isolated_table_directory(tablebase_path, material.table) as isolated_path:
+                with chess.syzygy.open_tablebase(isolated_path) as tablebase:
+                    verify_material(tablebase, material, args.progress)
+        else:
+            with chess.syzygy.open_tablebase(tablebase_path) as tablebase:
+                verify_material(tablebase, material, args.progress)
+
+
+@contextmanager
+def isolated_table_directory(source_directory: Path, table: str) -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(prefix=f"syzygy-{table}-") as temporary_directory:
+        target_directory = Path(temporary_directory)
+        for suffix in ("rtbw", "rtbz"):
+            source = source_directory / f"{table}.{suffix}"
+            if not source.exists():
+                raise FileNotFoundError(f"missing Syzygy table file: {source}")
+            target = target_directory / source.name
+            try:
+                os.link(source, target)
+            except OSError:
+                shutil.copy2(source, target)
+        yield target_directory
 
 
 def verify_material(tablebase: chess.syzygy.Tablebase, material: Material, progress: int) -> None:
-    seen: set[tuple[tuple[int, ...], bool]] = set()
+    seen: set[tuple[tuple[PieceOnSquare, ...], bool]] = set()
     probed = 0
     for pieces, white_to_move in material.generator():
         representative = canonical(pieces, white_to_move, material.symmetries)
         if representative in seen:
             continue
         seen.add(representative)
-        board = to_board(material.table, *representative)
-        tablebase.probe_wdl(board)
+        board = to_board(*representative)
+        actual_table = chess.syzygy.calc_key(board)
+        if actual_table != material.table:
+            raise AssertionError(f"{material.name}: generated {actual_table}, expected {material.table}")
+        tablebase.probe_wdl_table(board)
         probed += 1
         if progress and probed % progress == 0:
             print(f"{material.name}: probed {probed:,} / {material.expected_unique:,}")
@@ -93,20 +132,32 @@ def materials() -> list[Material]:
             BISHOP_COLOUR_PRESERVING_SYMMETRIES,
         ),
         Material("KRvKN", "KRvKN", 2_915_128, generate_krvkn, FULL_BOARD_SYMMETRIES),
+        Material(
+            "KBBvK(opposite bishops)",
+            "KBBvK",
+            1_493_368,
+            generate_kbbvk_opposite,
+            BISHOP_COLOUR_PRESERVING_SYMMETRIES,
+        ),
         Material("KBBvK(all bishop slots)", "KBBvK", 2_978_430, generate_kbbvk_all_ordered, FULL_BOARD_SYMMETRIES),
     ]
 
 
-def generate_krvk() -> Iterator[tuple[tuple[int, ...], bool]]:
-    yield from generate_major_piece(rook_attacks)
+def generate_krvk() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
+    yield from generate_major_piece("R", rook_attacks)
 
 
-def generate_kqvk() -> Iterator[tuple[tuple[int, ...], bool]]:
-    yield from generate_major_piece(lambda queen, target, blockers: rook_attacks(queen, target, blockers)
-                                    or bishop_attacks(queen, target, blockers))
+def generate_kqvk() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
+    yield from generate_major_piece(
+        "Q",
+        lambda queen, target, blockers: rook_attacks(queen, target, blockers)
+        or bishop_attacks(queen, target, blockers),
+    )
 
 
-def generate_major_piece(attacks: Callable[[int, int, tuple[int, ...]], bool]) -> Iterator[tuple[tuple[int, ...], bool]]:
+def generate_major_piece(
+    symbol: str, attacks: Callable[[int, int, tuple[int, ...]], bool]
+) -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     for white_king in range(64):
         for white_piece in range(64):
             if white_piece == white_king:
@@ -114,12 +165,17 @@ def generate_major_piece(attacks: Callable[[int, int, tuple[int, ...]], bool]) -
             for black_king in range(64):
                 if black_king in (white_king, white_piece) or kings_touch(white_king, black_king):
                     continue
+                pieces = (
+                    PieceOnSquare("K", white_king),
+                    PieceOnSquare(symbol, white_piece),
+                    PieceOnSquare("k", black_king),
+                )
                 if not attacks(white_piece, black_king, (white_king,)):
-                    yield (white_king, white_piece, black_king), True
-                yield (white_king, white_piece, black_king), False
+                    yield pieces, True
+                yield pieces, False
 
 
-def generate_kbnvk_light() -> Iterator[tuple[tuple[int, ...], bool]]:
+def generate_kbnvk_light() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     light_squares = [square for square in range(64) if is_light_square(square)]
     for white_king in range(64):
         for white_bishop in light_squares:
@@ -136,13 +192,19 @@ def generate_kbnvk_light() -> Iterator[tuple[tuple[int, ...], bool]]:
                         or bishop_attacks(white_bishop, black_king, (white_king, white_knight))
                         or knight_attacks(white_knight, black_king)
                     )
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("B", white_bishop),
+                        PieceOnSquare("N", white_knight),
+                        PieceOnSquare("k", black_king),
+                    )
                     if not black_in_check:
-                        yield (white_king, white_bishop, white_knight, black_king), True
+                        yield pieces, True
                     if not kings_touch(white_king, black_king):
-                        yield (white_king, white_bishop, white_knight, black_king), False
+                        yield pieces, False
 
 
-def generate_krvkb_light() -> Iterator[tuple[tuple[int, ...], bool]]:
+def generate_krvkb_light() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     light_squares = [square for square in range(64) if is_light_square(square)]
     for white_king in range(64):
         for white_rook in range(64):
@@ -160,13 +222,19 @@ def generate_krvkb_light() -> Iterator[tuple[tuple[int, ...], bool]]:
                     white_in_check = kings_touch(white_king, black_king) or bishop_attacks(
                         black_bishop, white_king, (black_king, white_rook)
                     )
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("R", white_rook),
+                        PieceOnSquare("k", black_king),
+                        PieceOnSquare("b", black_bishop),
+                    )
                     if not black_in_check:
-                        yield (white_king, white_rook, black_king, black_bishop), True
+                        yield pieces, True
                     if not white_in_check:
-                        yield (white_king, white_rook, black_king, black_bishop), False
+                        yield pieces, False
 
 
-def generate_krvkn() -> Iterator[tuple[tuple[int, ...], bool]]:
+def generate_krvkn() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     for white_king in range(64):
         for white_rook in range(64):
             if white_rook == white_king:
@@ -181,13 +249,49 @@ def generate_krvkn() -> Iterator[tuple[tuple[int, ...], bool]]:
                         white_rook, black_king, (white_king, black_knight)
                     )
                     white_in_check = kings_touch(white_king, black_king) or knight_attacks(black_knight, white_king)
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("R", white_rook),
+                        PieceOnSquare("k", black_king),
+                        PieceOnSquare("n", black_knight),
+                    )
                     if not black_in_check:
-                        yield (white_king, white_rook, black_king, black_knight), True
+                        yield pieces, True
                     if not white_in_check:
-                        yield (white_king, white_rook, black_king, black_knight), False
+                        yield pieces, False
 
 
-def generate_kbbvk_all_ordered() -> Iterator[tuple[tuple[int, ...], bool]]:
+def generate_kbbvk_opposite() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
+    light_squares = [square for square in range(64) if is_light_square(square)]
+    dark_squares = [square for square in range(64) if not is_light_square(square)]
+    for white_king in range(64):
+        for white_light_bishop in light_squares:
+            if white_light_bishop == white_king:
+                continue
+            for white_dark_bishop in dark_squares:
+                if white_dark_bishop in (white_king, white_light_bishop):
+                    continue
+                for black_king in range(64):
+                    if black_king in (white_king, white_light_bishop, white_dark_bishop):
+                        continue
+                    black_in_check = (
+                        kings_touch(white_king, black_king)
+                        or bishop_attacks(white_light_bishop, black_king, (white_king, white_dark_bishop))
+                        or bishop_attacks(white_dark_bishop, black_king, (white_king, white_light_bishop))
+                    )
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("B", white_light_bishop),
+                        PieceOnSquare("B", white_dark_bishop),
+                        PieceOnSquare("k", black_king),
+                    )
+                    if not black_in_check:
+                        yield pieces, True
+                    if not kings_touch(white_king, black_king):
+                        yield pieces, False
+
+
+def generate_kbbvk_all_ordered() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     for white_king in range(64):
         for white_bishop1 in range(64):
             if white_bishop1 == white_king:
@@ -203,43 +307,37 @@ def generate_kbbvk_all_ordered() -> Iterator[tuple[tuple[int, ...], bool]]:
                         or bishop_attacks(white_bishop1, black_king, (white_king, white_bishop2))
                         or bishop_attacks(white_bishop2, black_king, (white_king, white_bishop1))
                     )
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("B", white_bishop1),
+                        PieceOnSquare("B", white_bishop2),
+                        PieceOnSquare("k", black_king),
+                    )
                     if not black_in_check:
-                        yield (white_king, white_bishop1, white_bishop2, black_king), True
+                        yield pieces, True
                     if not kings_touch(white_king, black_king):
-                        yield (white_king, white_bishop1, white_bishop2, black_king), False
+                        yield pieces, False
 
 
-def to_board(table: str, pieces: tuple[int, ...], white_to_move: bool) -> chess.Board:
+def to_board(pieces: tuple[PieceOnSquare, ...], white_to_move: bool) -> chess.Board:
     board = chess.Board.empty()
     board.clear_stack()
     board.turn = chess.WHITE if white_to_move else chess.BLACK
     board.castling_rights = chess.BB_EMPTY
     board.ep_square = None
 
-    if table == "KRvK":
-        set_pieces(board, pieces, "KRk")
-    elif table == "KQvK":
-        set_pieces(board, pieces, "KQk")
-    elif table == "KBNvK":
-        set_pieces(board, pieces, "KBNk")
-    elif table == "KRvKB":
-        set_pieces(board, pieces, "KRkb")
-    elif table == "KRvKN":
-        set_pieces(board, pieces, "KRkn")
-    elif table == "KBBvK":
-        set_pieces(board, pieces, "KBBk")
-    else:
-        raise ValueError(table)
+    for piece in pieces:
+        board.set_piece_at(piece.square, chess.Piece.from_symbol(piece.symbol))
     return board
 
 
-def set_pieces(board: chess.Board, pieces: tuple[int, ...], symbols: str) -> None:
-    for square, symbol in zip(pieces, symbols):
-        board.set_piece_at(square, chess.Piece.from_symbol(symbol))
-
-
-def canonical(pieces: tuple[int, ...], white_to_move: bool, transform_indexes: Sequence[int]) -> tuple[tuple[int, ...], bool]:
-    return min((tuple(transform(square, index) for square in pieces), white_to_move) for index in transform_indexes)
+def canonical(
+    pieces: tuple[PieceOnSquare, ...], white_to_move: bool, transform_indexes: Sequence[int]
+) -> tuple[tuple[PieceOnSquare, ...], bool]:
+    return min(
+        (tuple(PieceOnSquare(piece.symbol, transform(piece.square, index)) for piece in pieces), white_to_move)
+        for index in transform_indexes
+    )
 
 
 def transform(square: int, transform_index: int) -> int:

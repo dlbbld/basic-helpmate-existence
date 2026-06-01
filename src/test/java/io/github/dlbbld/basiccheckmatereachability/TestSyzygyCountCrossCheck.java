@@ -39,7 +39,9 @@ class TestSyzygyCountCrossCheck {
   @Test
   void oppositeBishopSubsetAndExpandedBishopTableAreCountedSeparately() {
     assertCount(countOppositeBishops(), 2504128, 3469344, 626032, 867336, 1493368);
-    assertCount(countAllOrderedBishops(), 10164056, 13660584, 1270542, 1707888, 2978430);
+    assertCount(countOppositeBishopsOrderedSlots(), 5008256, 6938688, 626032, 867336, 1493368);
+    assertCount(countSameColorBishops(), 5155800, 6721896, 644510, 840552, 1485062);
+    assertCount(countAllBishopsBySummingColorSubsets(), 10164056, 13660584, 1270542, 1707888, 2978430);
   }
 
   private static void assertCount(Count count, int rawWhiteToMove, int rawBlackToMove, int uniqueWhiteToMove,
@@ -242,6 +244,78 @@ class TestSyzygyCountCrossCheck {
     return counter.count();
   }
 
+  private static Count countSameColorBishops() {
+    final var counter = new Counter();
+    for (var whiteKing = 0; whiteKing < 64; whiteKing++) {
+      for (var whiteBishop1 = 0; whiteBishop1 < 64; whiteBishop1++) {
+        if (whiteBishop1 == whiteKing) {
+          continue;
+        }
+        for (var whiteBishop2 = 0; whiteBishop2 < 64; whiteBishop2++) {
+          if (whiteBishop2 == whiteKing || whiteBishop2 == whiteBishop1
+              || isLightSquare(whiteBishop1) != isLightSquare(whiteBishop2)) {
+            continue;
+          }
+          for (var blackKing = 0; blackKing < 64; blackKing++) {
+            if (blackKing == whiteKing || blackKing == whiteBishop1 || blackKing == whiteBishop2) {
+              continue;
+            }
+            final var blackInCheck = kingsTouch(whiteKing, blackKing)
+                || bishopAttacks(whiteBishop1, blackKing, whiteKing, whiteBishop2)
+                || bishopAttacks(whiteBishop2, blackKing, whiteKing, whiteBishop1);
+            if (!blackInCheck) {
+              counter.addWhiteToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
+                  FULL_BOARD_SYMMETRIES);
+            }
+            if (!kingsTouch(whiteKing, blackKing)) {
+              counter.addBlackToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
+                  FULL_BOARD_SYMMETRIES);
+            }
+          }
+        }
+      }
+    }
+    return counter.count();
+  }
+
+  private static Count countOppositeBishopsOrderedSlots() {
+    final var counter = new Counter();
+    for (var whiteKing = 0; whiteKing < 64; whiteKing++) {
+      for (var whiteBishop1 = 0; whiteBishop1 < 64; whiteBishop1++) {
+        if (whiteBishop1 == whiteKing) {
+          continue;
+        }
+        for (var whiteBishop2 = 0; whiteBishop2 < 64; whiteBishop2++) {
+          if (whiteBishop2 == whiteKing || whiteBishop2 == whiteBishop1
+              || isLightSquare(whiteBishop1) == isLightSquare(whiteBishop2)) {
+            continue;
+          }
+          for (var blackKing = 0; blackKing < 64; blackKing++) {
+            if (blackKing == whiteKing || blackKing == whiteBishop1 || blackKing == whiteBishop2) {
+              continue;
+            }
+            final var blackInCheck = kingsTouch(whiteKing, blackKing)
+                || bishopAttacks(whiteBishop1, blackKing, whiteKing, whiteBishop2)
+                || bishopAttacks(whiteBishop2, blackKing, whiteKing, whiteBishop1);
+            if (!blackInCheck) {
+              counter.addWhiteToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
+                  FULL_BOARD_SYMMETRIES);
+            }
+            if (!kingsTouch(whiteKing, blackKing)) {
+              counter.addBlackToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
+                  FULL_BOARD_SYMMETRIES);
+            }
+          }
+        }
+      }
+    }
+    return counter.count();
+  }
+
+  private static Count countAllBishopsBySummingColorSubsets() {
+    return countOppositeBishopsOrderedSlots().plus(countSameColorBishops());
+  }
+
   private static boolean kingsTouch(int a, int b) {
     return Math.max(Math.abs(file(a) - file(b)), Math.abs(rank(a) - rank(b))) == 1;
   }
@@ -369,5 +443,11 @@ class TestSyzygyCountCrossCheck {
 
   private record Count(int rawWhiteToMove, int rawBlackToMove, int uniqueWhiteToMove, int uniqueBlackToMove,
       int uniqueTotal) {
+
+    Count plus(Count other) {
+      return new Count(rawWhiteToMove + other.rawWhiteToMove, rawBlackToMove + other.rawBlackToMove,
+          uniqueWhiteToMove + other.uniqueWhiteToMove, uniqueBlackToMove + other.uniqueBlackToMove,
+          uniqueTotal + other.uniqueTotal);
+    }
   }
 }

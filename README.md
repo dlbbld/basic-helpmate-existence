@@ -251,10 +251,11 @@ The table below gives the corresponding unique representative counts. The unique
 | `KBNvK(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KBNvK` after bishop-colour symmetry | 5,437,752 | 6,830,292 | 12,268,044 | 1,359,578 | 1,707,888 | 3,067,466 | 3,067,466 | matches |
 | `KRvKB(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KRvKB` after bishop-colour symmetry | 5,390,364 | 5,916,232 | 11,306,596 | 1,347,906 | 1,479,198 | 2,827,104 | 2,827,104 | matches |
 | `KRvKN` | theorem class | 10,780,728 | 12,535,256 | 23,315,984 | 1,347,906 | 1,567,222 | 2,915,128 | 2,915,128 | matches |
-| `KBBvK`, opposite bishops | theorem subset only | 2,504,128 | 3,469,344 | 5,973,472 | 626,032 | 867,336 | 1,493,368 | n/a | Syzygy does not split by bishop colours |
-| `KBBvK`, all ordered bishop slots | expanded Syzygy material table | 10,164,056 | 13,660,584 | 23,824,640 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
+| `KBBvK`, opposite bishops | converted to the same generic two-bishop-slot convention as Syzygy | 5,008,256 | 6,938,688 | 11,946,944 | 626,032 | 867,336 | 1,493,368 | n/a | generated subset |
+| `KBBvK`, same-colour bishops | generated in the same generic two-bishop-slot convention as Syzygy | 5,155,800 | 6,721,896 | 11,877,696 | 644,510 | 840,552 | 1,485,062 | n/a | generated subset |
+| `KBBvK`, sum | sum of the two preceding `KBBvK` rows | 10,164,056 | 13,660,584 | 23,824,640 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
 
-The `KBBvK` line needs special care. The theorem is only about opposite-coloured bishops. The Syzygy material key `KBBvK` does not expose a separate statistic for opposite-coloured bishops; it counts the whole two-bishop material table. When the independent counter is expanded to the same all-bishop table, using two bishop slots over all bishop-square colours, it matches Syzygy exactly. The opposite-coloured theorem subset is listed separately because that is the class proved here.
+The `KBBvK` line needs special care. The theorem is only about opposite-coloured bishops, with one light-square bishop and one dark-square bishop. The Syzygy material key `KBBvK` does not expose a separate statistic for opposite-coloured bishops; it counts the whole two-bishop material table in a generic two-bishop-slot convention. For that external comparison, the opposite-bishop subset is therefore converted to the same convention, the same-colour bishop subset is generated separately, and their sum matches Syzygy exactly.
 
 As a note our further analysis cannot be derived from the Syzygy tables because Syzygy WDL is adversarial tablebase value rather than cooperative reachability.
 
@@ -269,7 +270,7 @@ python scripts/verify_syzygy_position_sets.py
 
 ```
 
-The script generates one representative per relevant board-symmetry class and probes each representative against local Syzygy files with python-chess. It does not use the main reachability analyzers. On 30 May 2026, it was run against the local Syzygy files in with these results:
+The script generates one representative per relevant board-symmetry class and probes each representative against local Syzygy files with python-chess. It does not use the main reachability analyzers. Each generated record carries explicit piece symbols, and the script checks the actual Syzygy material key of the generated board before probing the WDL table for that key. With `--isolate-table`, the script creates a temporary directory for each selected material containing only that material's `.rtbw` and `.rtbz` files, so a wrong generated material cannot be satisfied by another table in the source directory. Missing table files fail with `FileNotFoundError`; python-chess does not download tables. On 30 May 2026, it was run against the local Syzygy files in with these results:
 
 | Material class | Unique representatives probed |
 | --- | --- |
@@ -278,9 +279,10 @@ The script generates one representative per relevant board-symmetry class and pr
 | `KBNvK(light bishop)` | 3,067,466 |
 | `KRvKB(light bishop)` | 2,827,104 |
 | `KRvKN` | 2,915,128 |
+| `KBBvK(opposite bishops)` | 1,493,368 |
 | `KBBvK`, all ordered bishop slots | 2,978,430 |
 
-Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete. The opposite-coloured `KBBvK` theorem class is contained in the expanded all-bishop Syzygy probe.
+Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete. The six theorem classes are probed directly; the expanded all-bishop `KBBvK` row is an additional check for the full Syzygy material table.
 
 ## Status
 
