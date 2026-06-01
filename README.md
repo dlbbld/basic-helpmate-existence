@@ -1,78 +1,59 @@
 # Basic Checkmate Reachability
 
-This project delivers a finite-state proof by code, supplemented by manually proving some positions as illegal, for basic helpmate reachability in selected low-material chess endgames. The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
+This project delivers a finite-state proof by code, supplemented by machine-checkable last-move illegality certificates for the local exceptions, for basic helpmate reachability in selected low-material chess endgames.
+
+The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
 
 ## Theorem
 
-Let `M` be the side with the mating material, and let `D` be the defending side. In every ongoing legal position in these material classes:
+Let `M` be the side with the mating material, and let `D` be the defending side. In every ongoing legal position in the material classes above:
 
 1.  If `M` is to move, then `M` has a helpmate.
-    
-2.  If `D` is to move, then `M` has a helpmate unless `D` has only capturing moves.  
-    Note: When D has only capturing moves, D has at most two legal moves - positions with two legal moves both capturing exist.
-    
+
+2.  If `D` is to move, then `M` has a helpmate unless `D` has one or two legal moves and every legal move captures one of `M`'s pieces.
+
 
 Equivalently, spelled out by colour:
 
-### White has the mating material
+* White has the mating material: if White is to move, White has a helpmate; if Black is to move, White has a helpmate unless Black has one or two legal moves and every legal move captures one of White's pieces.
 
-`KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`
-
-1a. White to move: White has a helpmate.
-
-1b. Black to move: White has a helpmate unless Black has only capturing moves.
-
-### Black has the mating material
-
-`KvKR`, `KvKQ`, `KvKBB` with opposite-coloured bishops, `KvKBN`, `KBvKR`, and `KNvKR`
-
-2a. Black to move: Black has a helpmate.
-
-2b. White to move: Black has a helpmate unless White has only capturing moves.
+* Black has the mating material: if Black is to move, Black has a helpmate; if White is to move, Black has a helpmate unless White has one or two legal moves and every legal move captures one of Black's pieces.
 
 ### Ongoing legal positions
 
-As mentioned, the theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves.
+The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves.
 
 ### Finite-state proof
 
-The computation is performed with White as `M` for:
-
-`KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`.
-
-The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence. Thus the theorem also covers:
-
-`KvKR`, `KvKQ`, `KvKBB` with opposite-coloured bishops, `KvKBN`, `KBvKR`, and `KNvKR`.
+The computation is performed with White as `M` for the six material classes listed above. The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence.
 
 The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop case is obtained by board symmetry, so the light-square computation is sufficient.
 
-## Motivation
+## Motivation and difficulty
 
 In chess, the FIDE rule on flag fall asks whether the opponent still has a helpmate; only then is the game a loss for the flagging player. This motivates checking whether the side with mating material has any possible cooperative continuation to checkmate, without having to construct such a continuation during adjudication.
 
 For familiar material classes this sounds almost obvious. One might try to give a direct geometric proof by separating cases such as "king in the corner", "king on the edge", and "king in the middle". In practice this is surprisingly fragile. Side to move, immediate checks, stalemates, forced captures, and positions being illegal or not all matter.
 
-## Difficulty
-
-Thus the statement seems natural, the difficulty is to prove that there are no exceptions. A proof involving structurally different positions like king in the corner, king at the edge, king inside the board might without explicitly checking all positions seems possible at first glance. But at second glance the richness of positions is so big that this is error-prone. So the theorem is proved by checking all positions.
+The theorem is therefore proved by checking all positions in the finite material-class graph instead of relying on a hand proof over geometric cases.
 
 ## Terms
 
 ### Potentially legal position
 
-When putting the pieces on the board, one usually only checks that the king of the player not having the move is not in check (so was not exposed to check or left in check on the last move). We call such a postion a "potentially legal position".
+When putting pieces on the board, one usually only checks that the king of the player not having the move is not in check. We call such a position a "potentially legal position".
 
 ### Legal and illegal position
 
-The FIDE laws of chess call a position which cannot arise from the starting position by a series of legal moves an "illegal position". We call a position that has arisen from the starting position by a series of legal moves a "legal position". So we call a not "illegal position" (in the FIDE definition) a "legal position". This is trivial but because the FIDE laws of chess do not defined the term "legal position" literally we state it here for clarity.
+The FIDE laws of chess call a position which cannot arise from the starting position by a series of legal moves an "illegal position". We call a position that can arise from the starting position by a series of legal moves a "legal position".
 
 ### Representative position
 
-A position can have up to eight symmetric positions by mirroring and rotation. We apply the standard reduction to check one such symmetric position only for each symmetry class. We call each member of a set of symnetric positions a "representative position". In the following counts will be given for all positions and then the number of positions reduced to one representative position per symnetric positions. This count is better suited for some cases, where we are interested in structural differences only.
+A position can have up to eight symmetric positions by mirroring and rotation. We call one chosen member of such a symmetry class a "representative position". Counts below are given both for all positions and for positions reduced to one representative per symmetry class.
 
 ## Illegal positions not satisfying the conclusion
 
-The finite-state proofs checks all potentially legal positions. That corresponds to putting the pieces on the board such that the king of the player not having the move is not in check (so could not be "captured" by the player having the move). That is de facto standard for such an analysis. Not all such potentially legal positions are legal positions, but to calculate the narrower set of legal positions is hard. As long our theorem holds for a potentially legal positions which is in fact illegal, this is not a problem. We are only "overproving" the claim. However if the theorem does not hold for a potentially legal position, we must show that the position is illegal, otherwise our theorem would be false. This is what we do in the following. We list the potentially legal positions for which the theorem does not hold and show that they are illegal.
+The finite-state proof checks all potentially legal positions. Not all of them are legal positions, but this only strengthens the result when the theorem holds. If the theorem does not hold for a potentially legal position, we must show that the position is illegal. The following representatives are exactly those local exceptions.
 
 ### Black to move
 
@@ -82,9 +63,7 @@ The local graph contains one apparent black-to-move exception:
 
 | Material class | Representative position | Status |
 | --- | --- | --- |
-| `KBNvK(light bishop)` | [![8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&pov=black)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) |  |
-| `8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1` |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) | illegal position |  |
+| `KBNvK(light bishop)` | [![8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&pov=black)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1)<br>`8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) | illegal position |
 
 The catch is that this position is illegal. Black is in check from the bishop on `b1`. If the position had arisen in a legal game, White's last move would have had to create that check. But the bishop cannot have moved to `b1`: the diagonal squares from which it could have arrived are blocked by the black king on `a2` and the white king on `c2`. Nor can the check have been discovered, because the bishop is already adjacent to the black king with no intervening square. So the position cannot arise from the normal starting position, it is illegal, and the conclusions remain applicable. In normal play, for example in online chess, the game cannot enter such a position because the system allows only legal moves.
 
@@ -94,64 +73,38 @@ The following are the potentially legal positions which do not satisfy the concl
 
 | No. | Material class | Representative position | Status |
 | --- | --- | --- | --- |
-| 1 | `KBBvK`, opposite bishops | [![8/8/8/8/8/B7/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/B7/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1) |  |
-| `8/8/8/8/8/B7/B7/k1K5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1) | illegal position |  |  |
-| 2 | `KBBvK`, opposite bishops | [![8/8/8/8/8/B7/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/B7/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1) |  |
-| `8/8/8/8/8/B7/B1K5/k7 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1) | illegal position |  |  |
-| 3 | `KBBvK`, opposite bishops | [![8/8/8/8/8/8/B1K5/k1B5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k1B5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/B1K5/k1B5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1) | illegal position |  |  |
-| 1 | `KBNvK`, light bishop | [![8/8/8/8/8/8/B7/k1KN4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B7/k1KN4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/B7/k1KN4 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1) | illegal position |  |  |
-| 2 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1) |  |
-| `8/8/8/8/8/3N4/B7/k1K5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1) | illegal position |  |  |
-| 3 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1) |  |
-| `8/8/8/8/2N5/8/B7/k1K5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1) | illegal position |  |  |
-| 4 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1) |  |
-| `8/8/8/8/N7/8/B7/k1K5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1) | illegal position |  |  |
-| 5 | `KBNvK`, light bishop | [![8/8/8/8/8/8/BN6/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/BN6/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/BN6/k1K5 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1) | illegal position |  |  |
-| 6 | `KBNvK`, light bishop | [![8/8/8/8/8/8/B1K5/k2N4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k2N4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/B1K5/k2N4 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1) | illegal position |  |  |
-| 7 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1) |  |
-| `8/8/8/8/8/3N4/B1K5/k7 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1) | illegal position |  |  |
-| 8 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1) |  |
-| `8/8/8/8/2N5/8/B1K5/k7 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1) | illegal position |  |  |
-| 9 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1) |  |
-| `8/8/8/8/N7/8/B1K5/k7 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1) | illegal position |  |  |
-| 10 | `KBNvK`, light bishop | [![8/8/8/8/8/8/BNK5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/BNK5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/BNK5/k7 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1) | illegal position |  |  |
-| 11 | `KBNvK`, light bishop | [![8/8/8/8/8/8/2K5/kB1N4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/2K5/kB1N4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/2K5/kB1N4 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1) | illegal position |  |  |
-| 12 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1) |  |
-| `8/8/8/8/8/3N4/2K5/kB6 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1) | illegal position |  |  |
-| 13 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1) |  |
-| `8/8/8/8/2N5/8/2K5/kB6 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1) | illegal position |  |  |
-| 14 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) |  |
-| `8/8/8/8/N7/8/2K5/kB6 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) | illegal position |  |  |
-| 15 | `KBNvK`, light bishop | [![8/8/8/8/8/8/1NK5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/1NK5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) |  |
-| `8/8/8/8/8/8/1NK5/kB6 w - - 0 1` |  |  |  |
-| [Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) | illegal position |  |  |
+| 1 | `KBBvK`, opposite bishops | [![8/8/8/8/8/B7/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/B7/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1)<br>`8/8/8/8/8/B7/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B7/k1K5_w_-_-_0_1) | illegal position |
+| 2 | `KBBvK`, opposite bishops | [![8/8/8/8/8/B7/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/B7/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1)<br>`8/8/8/8/8/B7/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1) | illegal position |
+| 3 | `KBBvK`, opposite bishops | [![8/8/8/8/8/8/B1K5/k1B5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k1B5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1)<br>`8/8/8/8/8/8/B1K5/k1B5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1) | illegal position |
+| 1 | `KBNvK`, light bishop | [![8/8/8/8/8/8/B7/k1KN4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B7/k1KN4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1)<br>`8/8/8/8/8/8/B7/k1KN4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B7/k1KN4_w_-_-_0_1) | illegal position |
+| 2 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1)<br>`8/8/8/8/8/3N4/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B7/k1K5_w_-_-_0_1) | illegal position |
+| 3 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1)<br>`8/8/8/8/2N5/8/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B7/k1K5_w_-_-_0_1) | illegal position |
+| 4 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/B7/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/B7/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1)<br>`8/8/8/8/N7/8/B7/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B7/k1K5_w_-_-_0_1) | illegal position |
+| 5 | `KBNvK`, light bishop | [![8/8/8/8/8/8/BN6/k1K5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/BN6/k1K5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1)<br>`8/8/8/8/8/8/BN6/k1K5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BN6/k1K5_w_-_-_0_1) | illegal position |
+| 6 | `KBNvK`, light bishop | [![8/8/8/8/8/8/B1K5/k2N4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k2N4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1)<br>`8/8/8/8/8/8/B1K5/k2N4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k2N4_w_-_-_0_1) | illegal position |
+| 7 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1)<br>`8/8/8/8/8/3N4/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/B1K5/k7_w_-_-_0_1) | illegal position |
+| 8 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1)<br>`8/8/8/8/2N5/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/B1K5/k7_w_-_-_0_1) | illegal position |
+| 9 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1)<br>`8/8/8/8/N7/8/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/B1K5/k7_w_-_-_0_1) | illegal position |
+| 10 | `KBNvK`, light bishop | [![8/8/8/8/8/8/BNK5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/BNK5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1)<br>`8/8/8/8/8/8/BNK5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/BNK5/k7_w_-_-_0_1) | illegal position |
+| 11 | `KBNvK`, light bishop | [![8/8/8/8/8/8/2K5/kB1N4 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/2K5/kB1N4%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1)<br>`8/8/8/8/8/8/2K5/kB1N4 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/2K5/kB1N4_w_-_-_0_1) | illegal position |
+| 12 | `KBNvK`, light bishop | [![8/8/8/8/8/3N4/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/3N4/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1)<br>`8/8/8/8/8/3N4/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/3N4/2K5/kB6_w_-_-_0_1) | illegal position |
+| 13 | `KBNvK`, light bishop | [![8/8/8/8/2N5/8/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1)<br>`8/8/8/8/2N5/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/2K5/kB6_w_-_-_0_1) | illegal position |
+| 14 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1)<br>`8/8/8/8/N7/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) | illegal position |
+| 15 | `KBNvK`, light bishop | [![8/8/8/8/8/8/1NK5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/1NK5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1)<br>`8/8/8/8/8/8/1NK5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) | illegal position |
 
 The three `KBBvK` representatives are illegal. Since White is to move and Black has only a king, Black's previous move would have had to be a king move to `a1` in the displayed representatives. The only possible predecessor square not immediately ruled out by king adjacency is `a2`, but in each `KBBvK` representative `a2` is occupied by a white bishop. Hence there is no legal black last move.
 
 The `KBNvK` representatives are illegal by the same last-move idea. For the rows with a bishop on `a2`, a black king coming from `a2` is impossible because `a2` is occupied. For the rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence again there is no legal black last move. Board symmetries preserve these arguments.
+
+### Machine-checkable illegality certificates
+
+The text above gives the chess reason why the listed representatives are illegal. The tests also check this reason mechanically with two small certificate algorithms.
+
+For the White-to-move exceptions, Black made the last move. Since Black has only a king in `KBBvK` and `KBNvK`, Black's last move must have been a king move. The certificate enumerates every adjacent source square of the current black king square. A source square is rejected if it is occupied now, adjacent to the white king, or still attacked by White even when the current black-king square is treated as a possible capture blocker. If every adjacent source square is rejected, then there is no possible last black king move, so the position is illegal.
+
+For the Black-to-move `KBNvK` exception, White made the last move and Black is in check. The certificate first verifies that there is a single checking white piece. If that checking piece is adjacent to the black king, then the check cannot have been discovered, because there is no square between checker and king from which a blocker could have moved away. Therefore the checking piece itself must have moved to its present square. The certificate then enumerates the checking piece's possible source squares. If every source ray is blocked immediately, then the checking piece has no possible source square, so the position is illegal.
+
+These certificates are intentionally narrower than a full proof-game solver. They formalize exactly the last-move arguments used for the local exception representatives.
 
 ## Verification
 
@@ -303,15 +256,13 @@ Implemented:
     
 *   optional pointwise Syzygy position-set probe script;
     
-*   position illegality classification for the potentially legal positions with white-to-move exceptions;
+*   machine-checkable illegality certificates for the local exception representatives;
     
 *   exposition draft in [docs/basic-checkmate-helpmate-exposition.md](docs/basic-checkmate-helpmate-exposition.md).
     
 
 Not yet implemented:
 
-*   machine-checkable illegality certificates for the local exception representatives;
-    
 *   machine-readable exported result tables and representative FEN sets.
     
 
