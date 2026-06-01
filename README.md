@@ -8,7 +8,8 @@ Let `M` be the side with the mating material, and let `D` be the defending side.
 
 1.  If `M` is to move, then `M` has a helpmate.
     
-2.  If `D` is to move, then `M` has a helpmate unless `D` has one or two legal moves and every legal first move by `D` captures one of `M`'s pieces.
+2.  If `D` is to move, then `M` has a helpmate unless `D` has only capturing moves.  
+    Note: When D has only capturing moves, D has at most two legal moves - positions with two legal moves both capturing exist.
     
 
 Equivalently, spelled out by colour:
@@ -19,7 +20,7 @@ Equivalently, spelled out by colour:
 
 1a. White to move: White has a helpmate.
 
-1b. Black to move: White has a helpmate unless Black has one or two legal moves and every legal first move by Black captures one of White's pieces.
+1b. Black to move: White has a helpmate unless Black has only capturing moves.
 
 ### Black has the mating material
 
@@ -27,7 +28,7 @@ Equivalently, spelled out by colour:
 
 2a. Black to move: Black has a helpmate.
 
-2b. White to move: Black has a helpmate unless White has one or two legal moves and every legal first move by White captures one of Black's pieces.
+2b. White to move: Black has a helpmate unless White has only capturing moves.
 
 ### Ongoing legal positions
 
