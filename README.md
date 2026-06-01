@@ -8,7 +8,7 @@ Let `M` be the side with the mating material, and let `D` be the defending side.
 
 1.  If `M` is to move, then `M` has a helpmate.
     
-2.  If `D` is to move, then `M` has a helpmate unless every legal first move by `D` captures one of `M`'s pieces.
+2.  If `D` is to move, then `M` has a helpmate unless `D` has one or two legal moves and every legal first move by `D` captures one of `M`'s pieces.
     
 
 Equivalently, spelled out by colour:
@@ -19,7 +19,7 @@ Equivalently, spelled out by colour:
 
 1a. White to move: White has a helpmate.
 
-1b. Black to move: White has a helpmate unless every legal first move by Black captures one of White's pieces.
+1b. Black to move: White has a helpmate unless Black has one or two legal moves and every legal first move by Black captures one of White's pieces.
 
 ### Black has the mating material
 
@@ -27,7 +27,7 @@ Equivalently, spelled out by colour:
 
 2a. Black to move: Black has a helpmate.
 
-2b. White to move: Black has a helpmate unless every legal first move by White captures one of Black's pieces.
+2b. White to move: Black has a helpmate unless White has one or two legal moves and every legal first move by White captures one of Black's pieces.
 
 ### Ongoing legal positions
 
@@ -210,29 +210,29 @@ For the rook endgames with a black defender, the corrected classification also r
 
 ## Current Position Counts for Black to move
 
-Counts are over potentially legal positions. "Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class. Thus, in the `KRvKB(light bishop)` and `KRvKN` rows, the stored black-to-move witnesses do not use White captures of the black bishop or knight as a shortcut to `KRvK`. Such captures are handled separately in the White-to-move classification, where they are needed only for local positions outside the fixed material-class graph.
+Counts are over potentially legal positions. "Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class. The forced first capture exception is split by the number of legal moves available to the defending side. No exception has more than two legal defending moves, so a position with three or more legal defending moves is immediately outside the exception. Thus, in the `KRvKB(light bishop)` and `KRvKN` rows, the stored black-to-move witnesses do not use White captures of the black bishop or knight as a shortcut to `KRvK`. Such captures are handled separately in the White-to-move classification, where they are needed only for local positions outside the fixed material-class graph.
 
 ### All potentially legal positions
 
-| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture | Counterexamples | Maximum helpmate plies |
-| --- | --- | --- | --- | --- | --- | --- |
-| `KRvK` | 223,944 | 216 | 68 | 412 | 0 | 14 |
-| `KQvK` | 223,944 | 364 | 872 | 2,420 | 0 | 14 |
-| `KBBvK`, opposite bishops | 3,469,344 | 1,552 | 5,320 | 7,952 | 0 | 16 |
-| `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,474 | 4, 1 representative, illegal | 16 |
-| `KRvKB(light bishop)` | 5,916,232 | 3,264 | 48 | 3,740 | 0 | 14 |
-| `KRvKN` | 12,535,256 | 9,328 | 48 | 7,168 | 0 | 14 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture: one move | Forced first capture: two moves | Counterexamples | Maximum helpmate plies |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `KRvK` | 223,944 | 216 | 68 | 412 | 0 | 0 | 14 |
+| `KQvK` | 223,944 | 364 | 872 | 2,420 | 0 | 0 | 14 |
+| `KBBvK`, opposite bishops | 3,469,344 | 1,552 | 5,320 | 7,312 | 640 | 0 | 16 |
+| `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,042 | 432 | 4, 1 representative, illegal | 16 |
+| `KRvKB(light bishop)` | 5,916,232 | 3,264 | 48 | 3,152 | 588 | 0 | 14 |
+| `KRvKN` | 12,535,256 | 9,328 | 48 | 6,848 | 320 | 0 | 14 |
 
 ### Potentially legal positions reduced to representative cases
 
-| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture | Counterexamples | Maximum helpmate plies |
-| --- | --- | --- | --- | --- | --- | --- |
-| `KRvK` | 28,056 | 27 | 9 | 54 | 0 | 14 |
-| `KQvK` | 28,056 | 46 | 109 | 305 | 0 | 14 |
-| `KBBvK`, opposite bishops | 867,336 | 194 | 665 | 994 | 0 | 16 |
-| `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,121 | 1 illegal | 16 |
-| `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 935 | 0 | 14 |
-| `KRvKN` | 1,567,222 | 1,166 | 6 | 896 | 0 | 14 |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture: one move | Forced first capture: two moves | Counterexamples | Maximum helpmate plies |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `KRvK` | 28,056 | 27 | 9 | 54 | 0 | 0 | 14 |
+| `KQvK` | 28,056 | 46 | 109 | 305 | 0 | 0 | 14 |
+| `KBBvK`, opposite bishops | 867,336 | 194 | 665 | 914 | 80 | 0 | 16 |
+| `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,013 | 108 | 1 illegal | 16 |
+| `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 788 | 147 | 0 | 14 |
+| `KRvKN` | 1,567,222 | 1,166 | 6 | 856 | 40 | 0 | 14 |
 
 The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
 

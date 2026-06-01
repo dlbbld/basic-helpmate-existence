@@ -9,7 +9,7 @@ Draft, 20 May 2026
 
 FIDE's dead-position rule is phrased in terms of existence: a position is dead if neither player can checkmate the opponent by any possible series of legal moves. This is the right chess rule, but it is not a small local material rule. Miguel Ambrona's Chess Helpmate Analyzer (CHA) gives a practical and sound approach to the problem by searching for helpmate sequences and by recognizing large classes of unwinnable positions statically. In high-level implementations, however, some elementary endgames can still be annoying: the position is obviously part of a classical mating material class, but a blind helpmate search may need to discover a long cooperative line.
 
-This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether the side with mating material has a cooperative continuation to checkmate. Let `W` be the side with mating material, the winner in the timeout application, and let `L` be the defending side. The proved statement is: in every ongoing legal position in the covered classes, if `W` is to move then `W` has a helpmate; if `L` is to move then `W` has a helpmate unless every legal first move by `L` captures one of `W`'s non-king mating pieces. The computation is performed with White as `W` for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The corresponding statements with Black as `W` follow by colour symmetry.
+This note proposes a finite-state supplement for such cases. For selected basic-checkmate material classes, we enumerate the complete local legal state graph and compute, by retrograde propagation from checkmate states, whether the side with mating material has a cooperative continuation to checkmate. Let `W` be the side with mating material, the winner in the timeout application, and let `L` be the defending side. The proved statement is: in every ongoing legal position in the covered classes, if `W` is to move then `W` has a helpmate; if `L` is to move then `W` has a helpmate unless `L` has one or two legal moves and every legal first move by `L` captures one of `W`'s pieces. The computation is performed with White as `W` for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK with a light-square bishop modulo one retro-illegal local exception, KRvKB(light), and KRvKN. The corresponding statements with Black as `W` follow by colour symmetry.
 
 ## 1. Motivation
 
@@ -46,19 +46,19 @@ This distinction matters, but it does not invalidate the intended shortcut. If a
 Let `W` be the side with the mating material, the winner in the timeout application, and let `L` be the defending side. In every ongoing legal position in the covered material classes:
 
 1. If `W` is to move, then `W` has a helpmate.
-2. If `L` is to move, then `W` has a helpmate unless every legal first move by `L` captures one of `W`'s non-king mating pieces.
+2. If `L` is to move, then `W` has a helpmate unless `L` has one or two legal moves and every legal first move by `L` captures one of `W`'s pieces.
 
 For White as the mating side this says:
 
 1a. White to move: White has a helpmate.
 
-1b. Black to move: White has a helpmate unless every legal first move by Black captures one of White's non-king mating pieces.
+1b. Black to move: White has a helpmate unless Black has one or two legal moves and every legal first move by Black captures one of White's pieces.
 
 For Black as the mating side this says:
 
 2a. Black to move: Black has a helpmate.
 
-2b. White to move: Black has a helpmate unless every legal first move by White captures one of Black's non-king mating pieces.
+2b. White to move: Black has a helpmate unless White has one or two legal moves and every legal first move by White captures one of Black's pieces.
 
 The computation is performed with White as `W` for KRvK, KQvK, KBBvK with opposite-coloured bishops, KBNvK, KRvKB, and KRvKN. The Black-side statements follow by colour symmetry of chess: swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence. The light-square bishop cases cover the corresponding dark-square bishop cases by board symmetry.
 
@@ -135,16 +135,16 @@ In one local run on 20 May 2026, the KRvK theorem analysis took 5,149 ms, the ce
 
 ## 8. Results
 
-The following table reports the current computed results. Counts are over local legal states. Canonical counts quotient by board symmetries appropriate to the material class.
+The following table reports the current computed results. Counts are over local legal states. Canonical counts quotient by board symmetries appropriate to the material class. The forced first capture exception is split by the number of legal moves available to the defending side; no exception has more than two legal defending moves.
 
-| Material class | Legal states | Black-to-move states | Black checkmates | Stalemates | Forced first capture | Counterexamples | Maximum witness distance |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| KRvK | 399,112 | 223,944 | 216 | 68 | 412, canonical 54 | 0 | 14 |
-| KQvK | 368,452 | 223,944 | 364 | 872 | 2,420, canonical 305 | 0 | 14 |
-| KBBvK, opposite bishops | 5,973,472 | 3,469,344 | 1,552 | 5,320 | 7,952, canonical 994 | 0 | 16 |
-| KBNvK, light bishop | 12,268,044 | 6,830,292 | 232 | 6,444 | 4,474, canonical 1,121 | 4 local states, 1 canonical | 16 |
-| KRvKB(light) | 11,306,596 | 5,916,232 | 3,264 | 48 | 3,740, canonical 935 | 0 | 14 |
-| KRvKN | 23,315,984 | 12,535,256 | 9,328 | 48 | 7,168, canonical 896 | 0 | 14 |
+| Material class | Legal states | Black-to-move states | Black checkmates | Stalemates | Forced first capture: one move | Forced first capture: two moves | Counterexamples | Maximum witness distance |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| KRvK | 399,112 | 223,944 | 216 | 68 | 412, canonical 54 | 0, canonical 0 | 0 | 14 |
+| KQvK | 368,452 | 223,944 | 364 | 872 | 2,420, canonical 305 | 0, canonical 0 | 0 | 14 |
+| KBBvK, opposite bishops | 5,973,472 | 3,469,344 | 1,552 | 5,320 | 7,312, canonical 914 | 640, canonical 80 | 0 | 16 |
+| KBNvK, light bishop | 12,268,044 | 6,830,292 | 232 | 6,444 | 4,042, canonical 1,013 | 432, canonical 108 | 4 local states, 1 canonical | 16 |
+| KRvKB(light) | 11,306,596 | 5,916,232 | 3,264 | 48 | 3,152, canonical 788 | 588, canonical 147 | 0 | 14 |
+| KRvKN | 23,315,984 | 12,535,256 | 9,328 | 48 | 6,848, canonical 856 | 320, canonical 40 | 0 | 14 |
 
 The KRvKB(light) and KRvKN rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are nevertheless natural practical endgames for the same reason: if Black is not forced to capture the rook on move one, the entire local material class is cooperatively reachable to a rook mate.
 
@@ -252,9 +252,10 @@ The intended use is as a sound shortcut inside a larger unwinnability analyzer.
 Suppose the intended winner is White and the current material class is one of the verified classes. If it is Black to move, the analyzer checks:
 
 1. Is the position already checkmate or stalemate? If so, handle that terminal result directly.
-2. Does Black have a legal first move that preserves White's mating material?
-3. If yes, return "winnable for White" by the material-class certificate.
-4. If no, all legal first moves capture a mating piece; analyze the resulting reduced material instead.
+2. Does Black have three or more legal moves? If so, return "winnable for White" by the material-class certificate.
+3. Otherwise, does Black have a legal first move that preserves White's mating material?
+4. If yes, return "winnable for White" by the material-class certificate.
+5. If no, all legal first moves capture a mating piece; analyze the resulting reduced material instead.
 
 For White to move, a similar certificate can be used by following the stored witness move directly, or by reducing to the black-to-move statement after one White move, depending on how the shortcut is integrated.
 
