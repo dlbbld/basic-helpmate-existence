@@ -1,7 +1,7 @@
 # A finite-state certificate for basic-checkmate reachability in chess
 
 Daniel Bächli  
-Mathematician, chess player, and author of Clean Chess
+Mathematician, chess interested, and author of Ashlar Chess
 
 Draft, 20 May 2026
 
