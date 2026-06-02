@@ -101,7 +101,7 @@ The terminal winning states are all states in which Black is checkmated. From th
 
 The result is exact for the enumerated graph: a state is marked winning if and only if some material-preserving legal path leads from it to a black-checkmate state.
 
-This is not the same as `FindHelpmateExhaust`. The computation is a whole-graph dynamic program over a fixed material class. In exchange for being specialized, it avoids repeated rediscovery of the same suffixes.
+This is not the same as `FindHelpmate`. The computation is a whole-graph dynamic program over a fixed material class. In exchange for being specialized, it avoids repeated rediscovery of the same suffixes.
 
 ## 6. Why a direct proof is difficult
 

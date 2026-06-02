@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class TestBasicLightBishopKnightHelpMateVerifier {
+class TestBasicLightBishopKnightHelpmateVerifier {
 
   @SuppressWarnings("static-method")
   @Test
   void kbnvKLightBishopCertificateVerifiesTheoremRoots() {
-    final var result = BasicLightBishopKnightHelpMateVerifier.verify();
+    final var result = BasicLightBishopKnightHelpmateVerifier.verify();
 
     assertEquals(12268044, result.legalStateCount());
     assertEquals(232, result.terminalCheckmateCount());

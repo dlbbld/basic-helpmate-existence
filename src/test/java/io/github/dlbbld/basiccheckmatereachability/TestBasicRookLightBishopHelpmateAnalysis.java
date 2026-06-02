@@ -9,41 +9,41 @@ import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
-import io.github.dlbbld.basiccheckmatereachability.BasicRookKnightHelpMateAnalysis.RookKnightState;
+import io.github.dlbbld.basiccheckmatereachability.BasicRookLightBishopHelpmateAnalysis.RookLightBishopState;
 
-class TestBasicRookKnightHelpMateAnalysis {
+class TestBasicRookLightBishopHelpmateAnalysis {
 
   @SuppressWarnings("static-method")
   @Test
-  void krvKNBlackToMoveOngoingNonForcedNonCapturePositionsAreWinnable() {
-    final var result = BasicRookKnightHelpMateAnalysis.analyze();
+  void krvKBLightBishopBlackToMoveOngoingNonForcedNonCapturePositionsAreWinnable() {
+    final var result = BasicRookLightBishopHelpmateAnalysis.analyze();
 
-    assertEquals(23315984, result.legalStateCount());
-    assertEquals(10780728, result.whiteToMoveStateCount());
-    assertEquals(12535256, result.blackToMoveStateCount());
-    assertEquals(2644536, result.blackToMoveInCheckStateCount());
-    assertEquals(9890720, result.blackToMoveNotInCheckStateCount());
-    assertEquals(9328, result.blackCheckmateCount());
-    assertEquals(8, result.endedWhiteToMoveStateCount());
-    assertEquals(24, result.reducibleWhiteToMoveStateCount());
-    assertEquals(24, result.reducibleWhiteToMoveStates().size());
+    assertEquals(11306596, result.legalStateCount());
+    assertEquals(5390364, result.whiteToMoveStateCount());
+    assertEquals(5916232, result.blackToMoveStateCount());
+    assertEquals(1249500, result.blackToMoveInCheckStateCount());
+    assertEquals(4666732, result.blackToMoveNotInCheckStateCount());
+    assertEquals(3264, result.blackCheckmateCount());
+    assertEquals(0, result.endedWhiteToMoveStateCount());
+    assertEquals(8, result.reducibleWhiteToMoveStateCount());
+    assertEquals(8, result.reducibleWhiteToMoveStates().size());
     assertReducibleStatesReallyEnterWinningKrvK(result);
     assertEquals(0, result.unwinnableWhiteToMoveStateCount());
     assertEquals(0, result.unwinnableWhiteToMoveRepresentatives().size());
-    assertEquals(12525880, result.ongoingBlackToMoveStateCount());
-    assertEquals(23308736, result.winningStateCount());
+    assertEquals(5912920, result.ongoingBlackToMoveStateCount());
+    assertEquals(11302800, result.winningStateCount());
 
-    assertEquals(7168, result.forcedRookCaptureStateCount());
-    assertEquals(896, result.forcedRookCaptureRepresentatives().size());
+    assertEquals(3740, result.forcedRookCaptureStateCount());
+    assertEquals(935, result.forcedRookCaptureRepresentatives().size());
 
     assertEquals(48, result.stalemateStateCount());
-    assertEquals(6, result.stalemateRepresentatives().size());
+    assertEquals(12, result.stalemateRepresentatives().size());
 
     assertNoCounterexamplesAndCountsBalance(result);
   }
 
   private static void assertNoCounterexamplesAndCountsBalance(
-      BasicRookKnightHelpMateAnalysis.AnalysisResult result) {
+      BasicRookLightBishopHelpmateAnalysis.AnalysisResult result) {
     assertEquals(0, result.counterexampleStateCount());
     assertTrue(result.counterexampleRepresentatives().isEmpty());
     assertEquals(result.legalStateCount(), result.whiteToMoveStateCount() + result.blackToMoveStateCount());
@@ -56,15 +56,15 @@ class TestBasicRookKnightHelpMateAnalysis {
   }
 
   private static void assertReducibleStatesReallyEnterWinningKrvK(
-      BasicRookKnightHelpMateAnalysis.AnalysisResult result) {
-    for (final RookKnightState state : result.reducibleWhiteToMoveStates()) {
+      BasicRookLightBishopHelpmateAnalysis.AnalysisResult result) {
+    for (final RookLightBishopState state : result.reducibleWhiteToMoveStates()) {
       assertTrue(hasLegalCaptureToWinningKrvK(state), state.toString());
     }
   }
 
-  private static boolean hasLegalCaptureToWinningKrvK(RookKnightState state) {
+  private static boolean hasLegalCaptureToWinningKrvK(RookLightBishopState state) {
     for (final MoveSpecification move : toBitboardPosition(state).legalMoves(Side.WHITE, 0L)) {
-      if (move.toSquare() != state.blackKnight()) {
+      if (move.toSquare() != state.blackBishop()) {
         continue;
       }
       final var whiteKing = move.fromSquare() == state.whiteKing() ? move.toSquare() : state.whiteKing();
@@ -91,13 +91,12 @@ class TestBasicRookKnightHelpMateAnalysis {
     return false;
   }
 
-  private static BitboardPosition toBitboardPosition(RookKnightState state) {
-    return new BitboardPosition(0L, bit(state.whiteRook()), 0L, 0L, 0L, bit(state.whiteKing()), 0L, 0L,
-        bit(state.blackKnight()), 0L, 0L, bit(state.blackKing()));
+  private static BitboardPosition toBitboardPosition(RookLightBishopState state) {
+    return new BitboardPosition(0L, bit(state.whiteRook()), 0L, 0L, 0L, bit(state.whiteKing()), 0L, 0L, 0L,
+        bit(state.blackBishop()), 0L, bit(state.blackKing()));
   }
 
   private static long bit(Square square) {
     return 1L << square.ordinal();
   }
 }
-

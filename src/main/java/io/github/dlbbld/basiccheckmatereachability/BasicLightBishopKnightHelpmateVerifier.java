@@ -9,7 +9,7 @@ import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
 
-final class BasicLightBishopKnightHelpMateVerifier {
+final class BasicLightBishopKnightHelpmateVerifier {
 
   private static final int WHITE_TO_MOVE = 0;
   private static final int BLACK_TO_MOVE = 1;
@@ -48,7 +48,7 @@ final class BasicLightBishopKnightHelpMateVerifier {
       {1, 1}
   };
 
-  private BasicLightBishopKnightHelpMateVerifier() {
+  private BasicLightBishopKnightHelpmateVerifier() {
   }
 
   static VerificationResult verify() {

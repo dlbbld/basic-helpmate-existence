@@ -1,17 +1,17 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.ROOK;
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.QUEEN;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.ROOK;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.QUEEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class TestBasicMajorPieceHelpMateVerifier {
+class TestBasicMajorPieceHelpmateVerifier {
 
   @SuppressWarnings("static-method")
   @Test
   void krvKCertificateVerifiesTheoremRoots() {
-    final var result = BasicMajorPieceHelpMateVerifier.verifyKrvK();
+    final var result = BasicMajorPieceHelpmateVerifier.verifyKrvK();
 
     assertEquals(ROOK, result.whiteMajorPiece());
     assertEquals(399112, result.legalStateCount());
@@ -28,7 +28,7 @@ class TestBasicMajorPieceHelpMateVerifier {
   @SuppressWarnings("static-method")
   @Test
   void kqvKCertificateVerifiesTheoremRoots() {
-    final var result = BasicMajorPieceHelpMateVerifier.verifyKqvK();
+    final var result = BasicMajorPieceHelpmateVerifier.verifyKqvK();
 
     assertEquals(QUEEN, result.whiteMajorPiece());
     assertEquals(368452, result.legalStateCount());

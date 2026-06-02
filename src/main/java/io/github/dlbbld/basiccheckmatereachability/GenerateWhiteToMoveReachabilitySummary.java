@@ -1,7 +1,7 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.QUEEN;
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.ROOK;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.QUEEN;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.ROOK;
 
 import java.util.HashSet;
 import java.util.List;
@@ -36,34 +36,34 @@ public class GenerateWhiteToMoveReachabilitySummary {
       "8/8/8/8/8/8/BNK5/k7 w - - 0 1");
 
   public static void main(String[] args) {
-    final var rook = BasicMajorPieceHelpMateAnalysis.analyze(ROOK);
-    final var rookVerification = BasicMajorPieceHelpMateVerifier.verifyKrvK();
+    final var rook = BasicMajorPieceHelpmateAnalysis.analyze(ROOK);
+    final var rookVerification = BasicMajorPieceHelpmateVerifier.verifyKrvK();
     final var rookTerminals = whiteTerminalCounts(ROOK);
     print("KRvK", rook.whiteToMoveStateCount(), rook.unwinnableWhiteToMoveStateCount(),
         rook.unwinnableWhiteToMoveRepresentatives().size());
 
-    final var queen = BasicMajorPieceHelpMateAnalysis.analyze(QUEEN);
-    final var queenVerification = BasicMajorPieceHelpMateVerifier.verifyKqvK();
+    final var queen = BasicMajorPieceHelpmateAnalysis.analyze(QUEEN);
+    final var queenVerification = BasicMajorPieceHelpmateVerifier.verifyKqvK();
     final var queenTerminals = whiteTerminalCounts(QUEEN);
     print("KQvK", queen.whiteToMoveStateCount(), queen.unwinnableWhiteToMoveStateCount(),
         queen.unwinnableWhiteToMoveRepresentatives().size());
 
-    final var lightBishopKnight = BasicLightBishopKnightHelpMateAnalysis.analyze();
-    final var lightBishopKnightVerification = BasicLightBishopKnightHelpMateVerifier.verify();
+    final var lightBishopKnight = BasicLightBishopKnightHelpmateAnalysis.analyze();
+    final var lightBishopKnightVerification = BasicLightBishopKnightHelpmateVerifier.verify();
     final var lightBishopKnightTerminals = whiteTerminalCountsKbnvK();
     print("KBNvK(light bishop)", lightBishopKnight.whiteToMoveStateCount(),
         lightBishopKnight.unwinnableWhiteToMoveStateCount(),
         lightBishopKnight.unwinnableWhiteToMoveRepresentatives().size());
 
-    final var oppositeBishops = BasicOppositeBishopsHelpMateAnalysis.analyze();
-    final var oppositeBishopsVerification = BasicFourPieceHelpMateVerifier.verifyKbbvK();
+    final var oppositeBishops = BasicOppositeBishopsHelpmateAnalysis.analyze();
+    final var oppositeBishopsVerification = BasicFourPieceHelpmateVerifier.verifyKbbvK();
     final var oppositeBishopsTerminals = whiteTerminalCountsKbbvK();
     print("KBBvK(opposite bishops)", oppositeBishops.whiteToMoveStateCount(),
         oppositeBishops.unwinnableWhiteToMoveStateCount(),
         oppositeBishops.unwinnableWhiteToMoveRepresentatives().size());
 
-    final var rookLightBishop = BasicRookLightBishopHelpMateAnalysis.analyze();
-    final var rookLightBishopVerification = BasicFourPieceHelpMateVerifier.verifyKrvKbLightBishop();
+    final var rookLightBishop = BasicRookLightBishopHelpmateAnalysis.analyze();
+    final var rookLightBishopVerification = BasicFourPieceHelpmateVerifier.verifyKrvKbLightBishop();
     final var rookLightBishopTerminals = whiteTerminalCountsKrvKb();
     print("KRvKB(light bishop)", rookLightBishop.whiteToMoveStateCount(),
         rookLightBishop.unwinnableWhiteToMoveStateCount(),
@@ -71,8 +71,8 @@ public class GenerateWhiteToMoveReachabilitySummary {
     printNonOngoingOrReducible(rookLightBishop.endedWhiteToMoveStateCount(),
         rookLightBishop.reducibleWhiteToMoveStateCount());
 
-    final var rookKnight = BasicRookKnightHelpMateAnalysis.analyze();
-    final var rookKnightVerification = BasicFourPieceHelpMateVerifier.verifyKrvKn();
+    final var rookKnight = BasicRookKnightHelpmateAnalysis.analyze();
+    final var rookKnightVerification = BasicFourPieceHelpmateVerifier.verifyKrvKn();
     final var rookKnightTerminals = whiteTerminalCountsKrvKn();
     print("KRvKN", rookKnight.whiteToMoveStateCount(), rookKnight.unwinnableWhiteToMoveStateCount(),
         rookKnight.unwinnableWhiteToMoveRepresentatives().size());
@@ -187,7 +187,7 @@ public class GenerateWhiteToMoveReachabilitySummary {
   }
 
   private static Set<String> toOppositeBishopsFenSet(
-      Set<BasicOppositeBishopsHelpMateAnalysis.OppositeBishopsState> states) {
+      Set<BasicOppositeBishopsHelpmateAnalysis.OppositeBishopsState> states) {
     final Set<String> result = new HashSet<>();
     for (final var state : states) {
       result.add(toFen(state));
@@ -196,7 +196,7 @@ public class GenerateWhiteToMoveReachabilitySummary {
   }
 
   private static Set<String> toLightBishopKnightFenSet(
-      Set<BasicLightBishopKnightHelpMateAnalysis.LightBishopKnightState> states) {
+      Set<BasicLightBishopKnightHelpmateAnalysis.LightBishopKnightState> states) {
     final Set<String> result = new HashSet<>();
     for (final var state : states) {
       result.add(toFen(state));
@@ -214,7 +214,7 @@ public class GenerateWhiteToMoveReachabilitySummary {
         + "&pov=" + sideToMove;
   }
 
-  private static WhiteTerminalCounts whiteTerminalCounts(BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece piece) {
+  private static WhiteTerminalCounts whiteTerminalCounts(BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece piece) {
     final var accumulator = new WhiteTerminalAccumulator(0, 1, 2, 3, 4, 5, 6, 7);
     for (final Square whiteKing : Square.REAL) {
       for (final Square whiteMajor : Square.REAL) {
@@ -353,23 +353,23 @@ public class GenerateWhiteToMoveReachabilitySummary {
     return 1L << square.ordinal();
   }
 
-  private static String toFen(BasicOppositeBishopsHelpMateAnalysis.OppositeBishopsState state) {
+  private static String toFen(BasicOppositeBishopsHelpmateAnalysis.OppositeBishopsState state) {
     return toFen(Side.WHITE, new PieceOnSquare('K', state.whiteKing()),
         new PieceOnSquare('B', state.whiteLightBishop()), new PieceOnSquare('B', state.whiteDarkBishop()),
         new PieceOnSquare('k', state.blackKing()));
   }
 
-  private static String toFen(BasicLightBishopKnightHelpMateAnalysis.LightBishopKnightState state) {
+  private static String toFen(BasicLightBishopKnightHelpmateAnalysis.LightBishopKnightState state) {
     return toFen(Side.WHITE, new PieceOnSquare('K', state.whiteKing()), new PieceOnSquare('B', state.whiteBishop()),
         new PieceOnSquare('N', state.whiteKnight()), new PieceOnSquare('k', state.blackKing()));
   }
 
-  private static String toFen(BasicRookLightBishopHelpMateAnalysis.RookLightBishopState state) {
+  private static String toFen(BasicRookLightBishopHelpmateAnalysis.RookLightBishopState state) {
     return toFen(Side.WHITE, new PieceOnSquare('K', state.whiteKing()), new PieceOnSquare('R', state.whiteRook()),
         new PieceOnSquare('k', state.blackKing()), new PieceOnSquare('b', state.blackBishop()));
   }
 
-  private static String toFen(BasicRookKnightHelpMateAnalysis.RookKnightState state) {
+  private static String toFen(BasicRookKnightHelpmateAnalysis.RookKnightState state) {
     return toFen(Side.WHITE, new PieceOnSquare('K', state.whiteKing()), new PieceOnSquare('R', state.whiteRook()),
         new PieceOnSquare('k', state.blackKing()), new PieceOnSquare('n', state.blackKnight()));
   }

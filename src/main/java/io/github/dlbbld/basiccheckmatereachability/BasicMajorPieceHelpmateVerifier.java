@@ -1,6 +1,6 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.ROOK;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.ROOK;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -15,12 +15,12 @@ import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
-import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.MajorPieceState;
-import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece;
+import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.MajorPieceState;
+import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece;
 
-final class BasicMajorPieceHelpMateVerifier {
+final class BasicMajorPieceHelpmateVerifier {
 
-  private BasicMajorPieceHelpMateVerifier() {
+  private BasicMajorPieceHelpmateVerifier() {
   }
 
   static VerificationResult verifyKrvK() {

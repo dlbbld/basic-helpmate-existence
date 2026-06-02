@@ -11,7 +11,7 @@ import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 
-final class BasicRookKnightHelpMateAnalysis {
+final class BasicRookKnightHelpmateAnalysis {
 
   private static final int WHITE_TO_MOVE = 0;
   private static final int BLACK_TO_MOVE = 1;
@@ -49,7 +49,7 @@ final class BasicRookKnightHelpMateAnalysis {
       {2, 1}
   };
 
-  private BasicRookKnightHelpMateAnalysis() {
+  private BasicRookKnightHelpmateAnalysis() {
   }
 
   static AnalysisResult analyze() {

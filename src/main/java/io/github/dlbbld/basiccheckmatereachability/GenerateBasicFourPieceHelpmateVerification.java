@@ -1,8 +1,8 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpMateVerifier.VerificationResult;
+import io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.VerificationResult;
 
-public class GenerateBasicFourPieceHelpMateVerification {
+public class GenerateBasicFourPieceHelpmateVerification {
 
   public static void main(String[] args) {
     printKbbvK();
@@ -12,11 +12,11 @@ public class GenerateBasicFourPieceHelpMateVerification {
 
   private static void printKbbvK() {
     final var analysisStart = System.nanoTime();
-    final var analysis = BasicOppositeBishopsHelpMateAnalysis.analyze();
+    final var analysis = BasicOppositeBishopsHelpmateAnalysis.analyze();
     final var analysisElapsedNanos = System.nanoTime() - analysisStart;
 
     final var verificationStart = System.nanoTime();
-    final var verification = BasicFourPieceHelpMateVerifier.verifyKbbvK();
+    final var verification = BasicFourPieceHelpmateVerifier.verifyKbbvK();
     final var verificationElapsedNanos = System.nanoTime() - verificationStart;
 
     print("KBBvK", analysis.legalStateCount(), analysis.blackToMoveStateCount(), analysis.blackCheckmateCount(),
@@ -27,11 +27,11 @@ public class GenerateBasicFourPieceHelpMateVerification {
 
   private static void printKrvKb() {
     final var analysisStart = System.nanoTime();
-    final var analysis = BasicRookLightBishopHelpMateAnalysis.analyze();
+    final var analysis = BasicRookLightBishopHelpmateAnalysis.analyze();
     final var analysisElapsedNanos = System.nanoTime() - analysisStart;
 
     final var verificationStart = System.nanoTime();
-    final var verification = BasicFourPieceHelpMateVerifier.verifyKrvKbLightBishop();
+    final var verification = BasicFourPieceHelpmateVerifier.verifyKrvKbLightBishop();
     final var verificationElapsedNanos = System.nanoTime() - verificationStart;
 
     print("KRvKB(light bishop)", analysis.legalStateCount(), analysis.blackToMoveStateCount(),
@@ -42,11 +42,11 @@ public class GenerateBasicFourPieceHelpMateVerification {
 
   private static void printKrvKn() {
     final var analysisStart = System.nanoTime();
-    final var analysis = BasicRookKnightHelpMateAnalysis.analyze();
+    final var analysis = BasicRookKnightHelpmateAnalysis.analyze();
     final var analysisElapsedNanos = System.nanoTime() - analysisStart;
 
     final var verificationStart = System.nanoTime();
-    final var verification = BasicFourPieceHelpMateVerifier.verifyKrvKn();
+    final var verification = BasicFourPieceHelpmateVerifier.verifyKrvKn();
     final var verificationElapsedNanos = System.nanoTime() - verificationStart;
 
     print("KRvKN", analysis.legalStateCount(), analysis.blackToMoveStateCount(), analysis.blackCheckmateCount(),

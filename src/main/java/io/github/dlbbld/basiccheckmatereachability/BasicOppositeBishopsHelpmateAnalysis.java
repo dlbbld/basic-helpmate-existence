@@ -11,7 +11,7 @@ import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 
-final class BasicOppositeBishopsHelpMateAnalysis {
+final class BasicOppositeBishopsHelpmateAnalysis {
 
   private static final int WHITE_TO_MOVE = 0;
   private static final int BLACK_TO_MOVE = 1;
@@ -38,7 +38,7 @@ final class BasicOppositeBishopsHelpMateAnalysis {
       {1, 1}
   };
 
-  private BasicOppositeBishopsHelpMateAnalysis() {
+  private BasicOppositeBishopsHelpmateAnalysis() {
   }
 
   static AnalysisResult analyze() {

@@ -16,7 +16,7 @@ class TestStrictIllegalityCertificates {
   @SuppressWarnings("static-method")
   @Test
   void kbnBlackToMoveCounterexampleHasNoPossibleLastWhiteCheckingMove() {
-    final var result = BasicLightBishopKnightHelpMateAnalysis.analyze();
+    final var result = BasicLightBishopKnightHelpmateAnalysis.analyze();
 
     assertEquals(1, result.counterexampleRepresentatives().size());
     for (final var state : result.counterexampleRepresentatives()) {
@@ -28,7 +28,7 @@ class TestStrictIllegalityCertificates {
   @SuppressWarnings("static-method")
   @Test
   void kbbWhiteToMoveCounterexamplesHaveNoPossibleLastBlackKingMove() {
-    final var result = BasicOppositeBishopsHelpMateAnalysis.analyze();
+    final var result = BasicOppositeBishopsHelpmateAnalysis.analyze();
 
     assertEquals(3, result.unwinnableWhiteToMoveRepresentatives().size());
     for (final var state : result.unwinnableWhiteToMoveRepresentatives()) {
@@ -40,7 +40,7 @@ class TestStrictIllegalityCertificates {
   @SuppressWarnings("static-method")
   @Test
   void kbnWhiteToMoveCounterexamplesHaveNoPossibleLastBlackKingMove() {
-    final var result = BasicLightBishopKnightHelpMateAnalysis.analyze();
+    final var result = BasicLightBishopKnightHelpmateAnalysis.analyze();
 
     assertEquals(15, result.unwinnableWhiteToMoveRepresentatives().size());
     for (final var state : result.unwinnableWhiteToMoveRepresentatives()) {

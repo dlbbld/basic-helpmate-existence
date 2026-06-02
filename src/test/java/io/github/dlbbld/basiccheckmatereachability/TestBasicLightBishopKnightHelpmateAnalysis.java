@@ -7,14 +7,14 @@ import org.junit.jupiter.api.Test;
 
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.basiccheckmatereachability.BasicLightBishopKnightHelpMateAnalysis.LightBishopKnightState;
+import io.github.dlbbld.basiccheckmatereachability.BasicLightBishopKnightHelpmateAnalysis.LightBishopKnightState;
 
-class TestBasicLightBishopKnightHelpMateAnalysis {
+class TestBasicLightBishopKnightHelpmateAnalysis {
 
   @SuppressWarnings("static-method")
   @Test
   void kbnLightBishopBlackToMoveOngoingNonForcedNonCapturePositionsHaveOneCounterexampleShape() {
-    final var result = BasicLightBishopKnightHelpMateAnalysis.analyze();
+    final var result = BasicLightBishopKnightHelpmateAnalysis.analyze();
 
     assertEquals(12268044, result.legalStateCount());
     assertEquals(5437752, result.whiteToMoveStateCount());
@@ -41,7 +41,7 @@ class TestBasicLightBishopKnightHelpMateAnalysis {
     assertCountsBalance(result);
   }
 
-  private static void assertCountsBalance(BasicLightBishopKnightHelpMateAnalysis.AnalysisResult result) {
+  private static void assertCountsBalance(BasicLightBishopKnightHelpmateAnalysis.AnalysisResult result) {
     assertEquals(result.legalStateCount(), result.whiteToMoveStateCount() + result.blackToMoveStateCount());
     assertEquals(result.blackToMoveStateCount(),
         result.blackToMoveInCheckStateCount() + result.blackToMoveNotInCheckStateCount());

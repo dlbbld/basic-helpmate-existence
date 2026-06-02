@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-class TestBasicOppositeBishopsHelpMateAnalysis {
+class TestBasicOppositeBishopsHelpmateAnalysis {
 
   @SuppressWarnings("static-method")
   @Test
   void kbbvKOppositeBishopsBlackToMoveOngoingNonForcedNonCapturePositionsAreWinnable() {
-    final var result = BasicOppositeBishopsHelpMateAnalysis.analyze();
+    final var result = BasicOppositeBishopsHelpmateAnalysis.analyze();
 
     assertEquals(5973472, result.legalStateCount());
     assertEquals(2504128, result.whiteToMoveStateCount());
@@ -33,7 +33,7 @@ class TestBasicOppositeBishopsHelpMateAnalysis {
   }
 
   private static void assertNoCounterexamplesAndCountsBalance(
-      BasicOppositeBishopsHelpMateAnalysis.AnalysisResult result) {
+      BasicOppositeBishopsHelpmateAnalysis.AnalysisResult result) {
     assertEquals(0, result.counterexampleStateCount());
     assertTrue(result.counterexampleRepresentatives().isEmpty());
     assertEquals(result.legalStateCount(), result.whiteToMoveStateCount() + result.blackToMoveStateCount());

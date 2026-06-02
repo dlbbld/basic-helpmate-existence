@@ -1,7 +1,7 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
+import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Set;
 
 import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
@@ -9,7 +9,7 @@ import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
 
-final class BasicFourPieceHelpMateVerifier {
+final class BasicFourPieceHelpmateVerifier {
 
   private static final int WHITE_TO_MOVE = 0;
   private static final int BLACK_TO_MOVE = 1;
@@ -19,43 +19,17 @@ final class BasicFourPieceHelpMateVerifier {
   private static final int HAS_LEGAL_BLACK_MOVE = 1;
   private static final int HAS_MATERIAL_PRESERVING_BLACK_MOVE = 2;
 
-  private static final int[][] KING_DELTAS = {
-      {-1, -1},
-      {-1, 0},
-      {-1, 1},
-      {0, -1},
-      {0, 1},
-      {1, -1},
-      {1, 0},
-      {1, 1}
-  };
+  private static final int[][] KING_DELTAS = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 },
+      { 1, 0 }, { 1, 1 } };
 
-  private static final int[][] ROOK_DELTAS = {
-      {-1, 0},
-      {0, -1},
-      {0, 1},
-      {1, 0}
-  };
+  private static final int[][] ROOK_DELTAS = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
 
-  private static final int[][] BISHOP_DELTAS = {
-      {-1, -1},
-      {-1, 1},
-      {1, -1},
-      {1, 1}
-  };
+  private static final int[][] BISHOP_DELTAS = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
-  private static final int[][] KNIGHT_DELTAS = {
-      {-2, -1},
-      {-2, 1},
-      {-1, -2},
-      {-1, 2},
-      {1, -2},
-      {1, 2},
-      {2, -1},
-      {2, 1}
-  };
+  private static final int[][] KNIGHT_DELTAS = { { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 }, { 1, -2 }, { 1, 2 },
+      { 2, -1 }, { 2, 1 } };
 
-  private BasicFourPieceHelpMateVerifier() {
+  private BasicFourPieceHelpmateVerifier() {
   }
 
   static VerificationResult verifyKbbvK() {
@@ -71,16 +45,14 @@ final class BasicFourPieceHelpMateVerifier {
   }
 
   private static VerificationResult verify(Material material) {
-    final BitSet legalStates = new BitSet(STATE_COUNT);
-    final BitSet checkmates = new BitSet(STATE_COUNT);
-    final BitSet winning = new BitSet(STATE_COUNT);
-    final int[] witnessByState = new int[STATE_COUNT];
-    final byte[] distanceByState = new byte[STATE_COUNT];
-    final IntQueue queue = new IntQueue();
+    final var legalStates = new BitSet(STATE_COUNT);
+    final var checkmates = new BitSet(STATE_COUNT);
+    final var winning = new BitSet(STATE_COUNT);
+    final var witnessByState = new int[STATE_COUNT];
+    final var distanceByState = new byte[STATE_COUNT];
+    final var queue = new IntQueue();
 
-    for (var i = 0; i < witnessByState.length; i++) {
-      witnessByState[i] = NO_WITNESS;
-    }
+    Arrays.fill(witnessByState, NO_WITNESS);
 
     var legalStateCount = 0;
     var terminalCheckmateCount = 0;
@@ -129,11 +101,11 @@ final class BasicFourPieceHelpMateVerifier {
       final var state = queue.remove();
       final var predecessorDistance = Byte.toUnsignedInt(distanceByState[state]) + 1;
       if (havingMove(state) == BLACK_TO_MOVE) {
-        maximumDistance = Math.max(maximumDistance, material.addWhitePredecessors(legalStates, winning,
-            witnessByState, distanceByState, queue, state, predecessorDistance));
+        maximumDistance = Math.max(maximumDistance, material.addWhitePredecessors(legalStates, winning, witnessByState,
+            distanceByState, queue, state, predecessorDistance));
       } else {
-        maximumDistance = Math.max(maximumDistance, material.addBlackPredecessors(legalStates, winning,
-            witnessByState, distanceByState, queue, state, predecessorDistance));
+        maximumDistance = Math.max(maximumDistance, material.addBlackPredecessors(legalStates, winning, witnessByState,
+            distanceByState, queue, state, predecessorDistance));
       }
     }
     return maximumDistance;
@@ -156,7 +128,7 @@ final class BasicFourPieceHelpMateVerifier {
   private static int verifyTerminals(Material material, BitSet checkmates) {
     var result = 0;
     for (var state = checkmates.nextSetBit(0); state >= 0; state = checkmates.nextSetBit(state + 1)) {
-      final BitboardPosition position = material.toBitboardPosition(state);
+      final var position = material.toBitboardPosition(state);
       if (havingMove(state) != BLACK_TO_MOVE || !position.isInCheck(Side.BLACK)
           || !position.legalMoves(Side.BLACK, 0L).isEmpty()) {
         throw new AssertionError("Terminal is not a verified black checkmate: " + state);
@@ -173,9 +145,8 @@ final class BasicFourPieceHelpMateVerifier {
       if (target == NO_WITNESS) {
         continue;
       }
-      final var witness = material.moveBetween(state, target);
-      final Set<MoveSpecification> legalMoves = material.toBitboardPosition(state).legalMoves(side(havingMove(state)),
-          0L);
+      final var witness = Material.moveBetween(state, target);
+      final var legalMoves = material.toBitboardPosition(state).legalMoves(side(havingMove(state)), 0L);
       if (!legalMoves.contains(witness)) {
         throw new AssertionError("Witness is not legal: " + state + " " + witness);
       }
@@ -516,14 +487,14 @@ final class BasicFourPieceHelpMateVerifier {
     int addWhitePredecessors(BitSet legalStates, BitSet winning, int[] witnessByState, byte[] distanceByState,
         IntQueue queue, int state, int predecessorDistance) {
       return switch (this) {
-        case OPPOSITE_BISHOPS -> addWhitePredecessorsKbbvK(legalStates, winning, witnessByState, distanceByState,
-            queue, state, predecessorDistance);
+        case OPPOSITE_BISHOPS -> addWhitePredecessorsKbbvK(legalStates, winning, witnessByState, distanceByState, queue,
+            state, predecessorDistance);
         case ROOK_LIGHT_BISHOP, ROOK_KNIGHT -> addWhitePredecessorsKrvKx(legalStates, winning, witnessByState,
             distanceByState, queue, state, predecessorDistance);
       };
     }
 
-    private int addWhitePredecessorsKbbvK(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addWhitePredecessorsKbbvK(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance) {
       final var whiteKing = first(state);
       final var lightBishop = second(state);
@@ -544,9 +515,9 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    private int addBishopPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState, byte[] distanceByState,
-        IntQueue queue, int state, int whiteKing, int lightBishop, int darkBishop, int blackKing,
-        boolean moveLightBishop, int predecessorDistance) {
+    private static int addBishopPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState,
+        byte[] distanceByState, IntQueue queue, int state, int whiteKing, int lightBishop, int darkBishop,
+        int blackKing, boolean moveLightBishop, int predecessorDistance) {
       final var destination = moveLightBishop ? lightBishop : darkBishop;
       final var otherBishop = moveLightBishop ? darkBishop : lightBishop;
       var result = 0;
@@ -569,7 +540,7 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    private int addWhitePredecessorsKrvKx(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addWhitePredecessorsKrvKx(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance) {
       final var whiteKing = first(state);
       final var whiteRook = second(state);
@@ -609,7 +580,7 @@ final class BasicFourPieceHelpMateVerifier {
       };
     }
 
-    private int addBlackKingPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addBlackKingPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance, int whiteKing, int secondPiece,
         int thirdPiece, int blackKing) {
       var result = 0;
@@ -623,7 +594,7 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    private int addBlackPredecessorsKrvKb(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addBlackPredecessorsKrvKb(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance) {
       final var whiteKing = first(state);
       final var whiteRook = second(state);
@@ -645,7 +616,7 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    private int addBlackPredecessorsKrvKn(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addBlackPredecessorsKrvKn(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance) {
       final var whiteKing = first(state);
       final var whiteRook = second(state);
@@ -663,7 +634,7 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    private int addBlackKingPredecessorsKrvKx(BitSet legalStates, BitSet winning, int[] witnessByState,
+    private static int addBlackKingPredecessorsKrvKx(BitSet legalStates, BitSet winning, int[] witnessByState,
         byte[] distanceByState, IntQueue queue, int state, int predecessorDistance, int whiteKing, int whiteRook,
         int blackKing, int blackPiece) {
       var result = 0;
@@ -677,7 +648,7 @@ final class BasicFourPieceHelpMateVerifier {
       return result;
     }
 
-    MoveSpecification moveBetween(int source, int target) {
+    static MoveSpecification moveBetween(int source, int target) {
       if (first(source) != first(target)) {
         return new MoveSpecification(square(first(source)), square(first(target)));
       }
@@ -750,7 +721,7 @@ final class BasicFourPieceHelpMateVerifier {
         tail = length;
         return;
       }
-      final int[] grown = new int[elements.length * 2];
+      final var grown = new int[elements.length * 2];
       System.arraycopy(elements, 0, grown, 0, elements.length);
       elements = grown;
     }

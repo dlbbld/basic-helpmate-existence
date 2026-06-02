@@ -1,18 +1,18 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.QUEEN;
-import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpMateAnalysis.WhiteMajorPiece.ROOK;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.QUEEN;
+import static io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece.ROOK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-class TestBasicMajorPieceHelpMateAnalysis {
+class TestBasicMajorPieceHelpmateAnalysis {
 
   @SuppressWarnings("static-method")
   @Test
   void krvKBlackToMoveOngoingNonForcedNonCapturePositionsAreWinnable() {
-    final var result = BasicMajorPieceHelpMateAnalysis.analyze(ROOK);
+    final var result = BasicMajorPieceHelpmateAnalysis.analyze(ROOK);
 
     assertEquals(399112, result.legalStateCount());
     assertEquals(175168, result.whiteToMoveStateCount());
@@ -38,7 +38,7 @@ class TestBasicMajorPieceHelpMateAnalysis {
   @SuppressWarnings("static-method")
   @Test
   void kqvKBlackToMoveOngoingNonForcedNonCapturePositionsAreWinnable() {
-    final var result = BasicMajorPieceHelpMateAnalysis.analyze(QUEEN);
+    final var result = BasicMajorPieceHelpmateAnalysis.analyze(QUEEN);
 
     assertEquals(368452, result.legalStateCount());
     assertEquals(144508, result.whiteToMoveStateCount());
@@ -62,7 +62,7 @@ class TestBasicMajorPieceHelpMateAnalysis {
   }
 
   private static void assertNoCounterexamplesAndCountsBalance(
-      BasicMajorPieceHelpMateAnalysis.AnalysisResult result) {
+      BasicMajorPieceHelpmateAnalysis.AnalysisResult result) {
     assertEquals(0, result.counterexampleStateCount());
     assertTrue(result.counterexampleRepresentatives().isEmpty());
     assertEquals(result.legalStateCount(), result.whiteToMoveStateCount() + result.blackToMoveStateCount());

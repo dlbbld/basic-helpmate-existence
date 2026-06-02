@@ -1,18 +1,18 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
-import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpMateVerifier.Material.OPPOSITE_BISHOPS;
-import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpMateVerifier.Material.ROOK_KNIGHT;
-import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpMateVerifier.Material.ROOK_LIGHT_BISHOP;
+import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.OPPOSITE_BISHOPS;
+import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.ROOK_KNIGHT;
+import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.ROOK_LIGHT_BISHOP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class TestBasicFourPieceHelpMateVerifier {
+class TestBasicFourPieceHelpmateVerifier {
 
   @SuppressWarnings("static-method")
   @Test
   void kbbvKCertificateVerifiesTheoremRoots() {
-    final var result = BasicFourPieceHelpMateVerifier.verifyKbbvK();
+    final var result = BasicFourPieceHelpmateVerifier.verifyKbbvK();
 
     assertEquals(OPPOSITE_BISHOPS, result.material());
     assertEquals(5973472, result.legalStateCount());
@@ -29,7 +29,7 @@ class TestBasicFourPieceHelpMateVerifier {
   @SuppressWarnings("static-method")
   @Test
   void krvKbLightBishopCertificateVerifiesTheoremRoots() {
-    final var result = BasicFourPieceHelpMateVerifier.verifyKrvKbLightBishop();
+    final var result = BasicFourPieceHelpmateVerifier.verifyKrvKbLightBishop();
 
     assertEquals(ROOK_LIGHT_BISHOP, result.material());
     assertEquals(11306596, result.legalStateCount());
@@ -46,7 +46,7 @@ class TestBasicFourPieceHelpMateVerifier {
   @SuppressWarnings("static-method")
   @Test
   void krvKnCertificateVerifiesTheoremRoots() {
-    final var result = BasicFourPieceHelpMateVerifier.verifyKrvKn();
+    final var result = BasicFourPieceHelpmateVerifier.verifyKrvKn();
 
     assertEquals(ROOK_KNIGHT, result.material());
     assertEquals(23315984, result.legalStateCount());

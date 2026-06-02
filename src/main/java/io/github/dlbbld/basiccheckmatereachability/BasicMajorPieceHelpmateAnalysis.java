@@ -16,9 +16,9 @@ import io.github.dlbbld.ashlarchess.board.enums.Square;
 import io.github.dlbbld.ashlarchess.common.Nulls;
 import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
 
-final class BasicMajorPieceHelpMateAnalysis {
+final class BasicMajorPieceHelpmateAnalysis {
 
-  private BasicMajorPieceHelpMateAnalysis() {
+  private BasicMajorPieceHelpmateAnalysis() {
   }
 
   static AnalysisResult analyze(WhiteMajorPiece whiteMajorPiece) {
