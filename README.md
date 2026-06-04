@@ -1,6 +1,6 @@
 # Basic Checkmate Reachability
 
-This project delivers a finite-state proof by code, supplemented by machine-checkable last-move illegality certificates for the local exceptions, for basic helpmate reachability in selected low-material chess endgames.
+This project delivers a finite-state proof by code for basic helpmate reachability for all legal positions in selected low-material chess endgames. It is supplemented by machine-checkable algorithms for determining few positions as illegal by last move, where the theorem does not hold.
 
 The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
 
@@ -21,7 +21,7 @@ Equivalently, spelled out by colour:
 
 ### Ongoing legal positions
 
-The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves.
+The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves. There are a few illegal positions where the theorem does not apply to. These illegal positions are provided and are determined as illegal by machine-checkable algorithms.
 
 ### Finite-state proof
 
@@ -37,15 +37,17 @@ For familiar material classes this sounds almost obvious. One might try to give 
 
 The theorem is therefore proved by checking all positions in the finite material-class graph instead of relying on a hand proof over geometric cases.
 
+A possible use is for an algorithm proving winnability for such positions. Instead of proving winnability by explicitly constructing a helpmate, the algorithm can rely on this theorem, and as such for these positions determine winnability more efficiently.
+
 ## Terms
-
-### Potentially legal position
-
-When putting pieces on the board, one usually only checks that the king of the player not having the move is not in check. We call such a position a "potentially legal position".
 
 ### Legal and illegal position
 
 The FIDE laws of chess call a position which cannot arise from the starting position by a series of legal moves an "illegal position". We call a position that can arise from the starting position by a series of legal moves a "legal position".
+
+### Potentially legal position
+
+When putting pieces on the board, one usually only checks that the king of the player not having the move is not in check. We call such a position a "potentially legal position". In most cases, such a potentially legal position is also a legal position. This is however not generally the case, there are potentially legal positions which are illegal. Later an example relevant to the theorem of KBNvK is given.
 
 ### Representative position
 
@@ -53,9 +55,9 @@ A position can have up to eight symmetric positions by mirroring and rotation. W
 
 ## Illegal positions not satisfying the conclusion
 
-The finite-state proof checks all potentially legal positions. Not all of them are legal positions, but this only strengthens the result when the theorem holds. If the theorem does not hold for a potentially legal position, we must show that the position is illegal. The following representatives are exactly those local exceptions.
+The finite-state proof checks the theorem for all potentially legal positions. If the theorem holds, that is fine. We must not determine if it is legal or illegal. If it is illegal the check just proves more than it must, which is not a problem. If the theorem does not hold for a potentially legal position, we must however show that the position is illegal. The following shows representatives for the potentially legal positions where the theorem does not hold and shows that they are illegal.
 
-For each such representative we give the chess reason in text and also check the reason mechanically in the tests. These machine-checkable illegality certificates are not a full proof-game solver. They formalize the specific last-move arguments needed here.
+For each such representative we give the chess reason in text and also check the reason mechanically in the tests. These machine-checkable algorithms are not creating a proof game. They formalize the human-checkable arguments by checking the last move that the position must be illegal, and so make these arguments verifiable by code.
 
 ### White to move
 
@@ -69,7 +71,7 @@ The following are the potentially legal positions which do not satisfy the concl
 | 2 | `KBBvK`, opposite bishops | [![8/8/8/8/8/B7/B1K5/k7 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/B7/B1K5/k7%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1)<br>`8/8/8/8/8/B7/B1K5/k7 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/B7/B1K5/k7_w_-_-_0_1) | illegal position |
 | 3 | `KBBvK`, opposite bishops | [![8/8/8/8/8/8/B1K5/k1B5 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/B1K5/k1B5%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1)<br>`8/8/8/8/8/8/B1K5/k1B5 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/B1K5/k1B5_w_-_-_0_1) | illegal position |
 
-These three representatives are illegal. Since White is to move and Black has only a king, Black's previous move would have had to be a king move to `a1` in the displayed representatives. The only possible predecessor square not immediately ruled out by king adjacency is `a2`, but in each `KBBvK` representative `a2` is occupied by a white bishop. Hence there is no legal black last move.
+These three representatives are illegal. Since White is to move and Black has only a king, Black's previous move would have had to be a king move to `a1` in the displayed representatives. The only possible predecessor square not immediately ruled out by king adjacency is `a2`, but in each `KBBvK` representative `a2` is occupied by a white bishop. Hence there is no legal black last move, so the position must be illegal.
 
 #### KBNvK, light bishop
 
@@ -91,29 +93,29 @@ These three representatives are illegal. Since White is to move and Black has on
 | 14 | `KBNvK`, light bishop | [![8/8/8/8/N7/8/2K5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/N7/8/2K5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1)<br>`8/8/8/8/N7/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) | illegal position |
 | 15 | `KBNvK`, light bishop | [![8/8/8/8/8/8/1NK5/kB6 w - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/8/8/1NK5/kB6%20w%20-%20-%200%201?turn=white&pov=white)](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1)<br>`8/8/8/8/8/8/1NK5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) | illegal position |
 
-These representatives are illegal by the same last-move idea. For the rows with a bishop on `a2`, a black king coming from `a2` is impossible because `a2` is occupied. For the rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence again there is no legal black last move. Board symmetries preserve these arguments.
+These representatives are illegal by the same last-move idea. For the rows with a bishop on `a2`, a black king coming from `a2` is impossible because `a2` is occupied. For the rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence again there is no legal black last move and the position must be illegal. Board symmetries preserve these arguments.
 
-#### Machine-checkable illegality certificate
+#### Machine-checkable illegality algorithm
 
 1. Black made the last move, because White is to move.
 2. Black has only a king in `KBBvK` and `KBNvK`, so Black's last move must have been a king move.
-3. The certificate enumerates every adjacent source square of the current black king square.
+3. The algorithm enumerates every adjacent source square of the current black king square.
 4. A source square is rejected if it is occupied now, adjacent to the white king, or still attacked by White even when the current black-king square is treated as a possible capture blocker.
 5. If every adjacent source square is rejected, then there is no possible last black king move, so the position is illegal.
 
 ### Black to move
 
-The `KBNvK` case shows why a pure hand proof is dangerous. The conclusion below does not hold for the below potentially legal position: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate.
+#### KBNvK, light bishop
 
-The local graph contains one apparent black-to-move exception:
+The `KBNvK` case shows why a pure hand proof is dangerous. Here the theorem holds for all potentially legal position except four, which are symnetric, defined by the below representative: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate. However it is shown that this position is illegal, so the theorem holds.
 
 | No. | Material class | Representative position | Status |
 | --- | --- | --- | --- |
 | 1 | `KBNvK(light bishop)` | [![8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1](https://fen2image.chessvision.ai/8/8/8/8/2N5/8/k1K5/1B6%20b%20-%20-%200%201?turn=black&pov=black)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1)<br>`8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) | illegal position |
 
-The catch is that this position is illegal. Black is in check from the bishop on `b1`. If the position had arisen in a legal game, White's last move would have had to create that check. But the bishop cannot have moved to `b1`: the diagonal squares from which it could have arrived are blocked by the black king on `a2` and the white king on `c2`. Nor can the check have been discovered, because the bishop is already adjacent to the black king with no intervening square. So the position cannot arise from the normal starting position, it is illegal, and the conclusions remain applicable.
+As mentioned this is not a counterexample. The catch is that this position is illegal. Black is in check from the bishop on `b1`. If the position had arisen in a legal game, White's last move would have had to create that check. But the bishop cannot have moved to `b1`: the diagonal squares from which it could have arrived are blocked by the black king on `a2` and the white king on `c2`. Nor can the check have been discovered, because the bishop is already adjacent to the black king with no intervening square. So the position cannot arise from the normal starting position, it is illegal, and the conclusions remain applicable.
 
-#### Machine-checkable illegality certificate
+#### Machine-checkable illegality algorithm
 
 1. White made the last move, because Black is to move.
 2. Black is in check, so White's last move must either move a checking piece to its current square or uncover a discovered check.
@@ -151,9 +153,9 @@ On a notebook with a per 2026 average performance, this test suite takes roughly
 
 ## Current Position Counts for White to move
 
-### All potentially legal positions
+"Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class.
 
-White-to-move local reachability:
+### All potentially legal positions
 
 | Material class | Potentially legal positions | Checkmates | Stalemates | Counterexamples | Maximum helpmate plies |
 | --- | --- | --- | --- | --- | --- |
@@ -164,9 +166,7 @@ White-to-move local reachability:
 | `KRvKB(light bishop)` | 5,390,364 | 0 | 0 | 0 | 13 |
 | `KRvKN` | 10,780,728 | 8 | 0 | 0 | 13 |
 
-The nonzero white-to-move counterexample rows are local material-class artifacts. The representative cases are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. The witness verifier already checks all fixed-material white-to-move winning states, because the stored witness edges are side-to-move agnostic.
-
-For the rook endgames with a black defender, the corrected classification also records non-exceptional local roots outside the fixed material-preserving graph: `KRvKB(light bishop)` has 8 White-to-move states where White captures the bishop and reduces to the verified `KRvK` case; `KRvKN` has 8 already-ended White-to-move states and 24 states where White captures the knight and reduces to `KRvK`. The tests replay each such White capture with Ashlar's legal move generator and then check that the resulting `KRvK` position is a verified helpmate root for White.
+The nonzero white-to-move counterexample rows are the potentially legal positions where the theorem does not hold. The representative cases are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. 
 
 ### Potentially legal positions reduced to representative cases
 
@@ -181,7 +181,7 @@ For the rook endgames with a black defender, the corrected classification also r
 
 ## Current Position Counts for Black to move
 
-Counts are over potentially legal positions. "Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class. The forced first capture exception is split by the number of legal moves available to the defending side. No exception has more than two legal defending moves, so a position with three or more legal defending moves is immediately outside the exception. Thus, in the `KRvKB(light bishop)` and `KRvKN` rows, the stored black-to-move witnesses do not use White captures of the black bishop or knight as a shortcut to `KRvK`. Such captures are handled separately in the White-to-move classification, where they are needed only for local positions outside the fixed material-class graph.
+The forced first capture exception is split by the number of legal moves available to the defending side. No exception has more than two legal defending moves, so a position with three or more legal defending moves is immediately outside the exception. 
 
 ### All potentially legal positions
 
@@ -205,8 +205,6 @@ Counts are over potentially legal positions. "Maximum helpmate plies" is the lar
 | `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 788 | 147 | 0 | 14 |
 | `KRvKN` | 1,567,222 | 1,166 | 6 | 856 | 40 | 0 | 14 |
 
-The `KRvKB(light bishop)` and `KRvKN` rows are not basic mates in the narrow textbook sense, because Black still has a defensive piece. They are included because they are natural practical endgames for the same reachability method.
-
 ## External Cross-Checks
 
 The potentially legal position counts can be checked against the Syzygy tablebases. Syzygy uses Kirill Kryukov's [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/) (NULP) definition. In that definition, a position includes side to move, castling rights, and en-passant rights, and "unique" means an equivalence class under easy symmetries such as board mirroring, board rotation, and color swapping. NULP looks at potentially legal positions as we do, thus the comparison is valid.
@@ -217,7 +215,7 @@ For example the potentially legal but in fact illegal positions `8/8/8/8/2N5/8/k
 
 The Syzygy site displays aggregate WDL outcomes, while its [machine-readable statistics](https://syzygy-tables.info/stats.json) keep the side to move separated. For example, the displayed `KRvK` value of 47,219 White wins is `21,959` White-to-move wins plus `25,260` Black-to-move losses.
 
-The table below gives the corresponding unique representative counts. The unique count is not always the raw count divided by 8, because symmetric positions can have smaller orbits.
+The table below gives the corresponding unique representative counts. The unique count is not always the raw count divided by 8, because symnetry operations can lead to identical positions.
 
 | Material class | Scope compared | Raw White to move | Raw Black to move | Raw total | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -232,7 +230,7 @@ The table below gives the corresponding unique representative counts. The unique
 
 The `KBBvK` line needs special care. The theorem is only about opposite-coloured bishops, with one light-square bishop and one dark-square bishop. The Syzygy material key `KBBvK` does not expose a separate statistic for opposite-coloured bishops; it counts the whole two-bishop material table in a generic two-bishop-slot convention. For that external comparison, the opposite-bishop subset is therefore converted to the same convention, the same-colour bishop subset is generated separately, and their sum matches Syzygy exactly.
 
-As a note our further analysis cannot be derived from the Syzygy tables because Syzygy WDL is adversarial tablebase value rather than cooperative reachability.
+As a note the Syzygy WDL tables is adversarial tablebase so it cannot be used to deduce helpmate existence.
 
 The regression test `TestSyzygyCountCrossCheck` independently recomputes all counts in this section without calling the main reachability analyzers.
 
@@ -258,30 +256,6 @@ The script generates one representative per relevant board-symmetry class and pr
 | `KBBvK`, all ordered bishop slots | 2,978,430 |
 
 Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete. The six theorem classes are probed directly; the expanded all-bishop `KBBvK` row is an additional check for the full Syzygy material table.
-
-## Status
-
-Implemented:
-
-*   finite-state theorem analyzers;
-    
-*   independent witness verifiers;
-    
-*   JUnit tests pinning all current counts;
-    
-*   Syzygy/NULP count cross-checks for the covered material classes;
-    
-*   optional pointwise Syzygy position-set probe script;
-    
-*   machine-checkable illegality certificates for the local exception representatives;
-    
-*   exposition draft in [docs/basic-checkmate-helpmate-exposition.md](docs/basic-checkmate-helpmate-exposition.md).
-    
-
-Not yet implemented:
-
-*   machine-readable exported result tables and representative FEN sets.
-    
 
 ## Dependency
 
