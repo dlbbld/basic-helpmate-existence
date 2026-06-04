@@ -39,6 +39,16 @@ The theorem is therefore proved by going through all potentially legal positions
 
 A possible use is for an algorithm proving winnability for such positions. Instead of proving winnability by explicitly constructing a helpmate, the algorithm can rely on this theorem, and as such for these positions determine winnability more efficiently.
 
+## High-level algorithmic picture
+
+There are two main algorithms.
+
+The first algorithm finds the theorem. For a fixed material class, it goes through all potentially legal positions in that material class. It then starts from every checkmate position and works backwards through legal moves. Whenever a position can legally move to a position already known to reach mate, it is also marked as reaching mate. Instead of trying a fresh helpmate search from each position, it computes the whole material class at once.
+
+The second algorithm verifies the theorem. During the computation, the analyzer stores one witness move for each non-terminal position it marks as winning. The verifier reconstructs each source position, asks Ashlar Chess's ordinary legal move generator for the legal moves, checks that the stored witness is one of them, checks that it reaches the recorded successor, and checks that the successor is closer to checkmate. Therefore every accepted position has a finite chain of ordinary legal moves to mate.
+
+The recorded distance is the length of this witnessed chain in plies. The maximum helpmate plies shown below is not a depth-to-mate under best defense. It is the largest number of plies needed by the cooperative reachability proof.
+
 ## Terms
 
 ### Legal and illegal position
