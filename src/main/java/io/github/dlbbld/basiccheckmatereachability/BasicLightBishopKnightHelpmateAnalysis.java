@@ -392,15 +392,6 @@ final class BasicLightBishopKnightHelpmateAnalysis {
     };
   }
 
-  private static int sideIndex(Side side) {
-    return switch (side) {
-      case WHITE -> WHITE_TO_MOVE;
-      case BLACK -> BLACK_TO_MOVE;
-      case NONE -> throw new IllegalArgumentException();
-      default -> throw new IllegalArgumentException();
-    };
-  }
-
   private static NavigableSet<LightBishopKnightState> canonicalRepresentatives(
       Collection<LightBishopKnightState> states) {
     final NavigableSet<LightBishopKnightState> result = new TreeSet<>();

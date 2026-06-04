@@ -1,6 +1,6 @@
-# Basic Checkmate Reachability
+# Basic Helpmate Existence
 
-This project delivers a finite-state proof by code for basic helpmate reachability for all legal positions in selected low-material chess endgames. It is supplemented by machine-checkable algorithms for determining few positions as illegal by last move, where the theorem does not hold.
+This project delivers a finite-state proof by code for basic helpmate existence in all legal positions in selected low-material chess endgames. It is supplemented by machine-checkable algorithms for determining a few positions as illegal by last move, where the theorem does not hold.
 
 The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
 
@@ -21,7 +21,7 @@ Equivalently, spelled out by colour:
 
 ### Ongoing legal positions
 
-The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves. There are a few illegal positions where the theorem does not apply to. These illegal positions are provided and are determined as illegal by machine-checkable algorithms.
+The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves. There are a few illegal positions to which the theorem does not apply. These illegal positions are provided and are determined as illegal by machine-checkable algorithms.
 
 ### Finite-state proof
 
@@ -119,7 +119,7 @@ These representatives are illegal by the same last-move idea. For the rows with 
 
 #### KBNvK, light bishop
 
-The `KBNvK` case shows why a pure hand proof is dangerous. Here the theorem holds for all potentially legal position except four, which are symnetric, defined by the below representative: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate. However it is shown that this position is illegal, so the theorem holds.
+The `KBNvK` case shows why a pure hand proof is dangerous. Here the theorem holds for all potentially legal positions except four, which are symmetric and represented by the position below: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate. However it is shown that this position is illegal, so the theorem holds.
 
 | No. | Material class | Side to move | Representative position | Status |
 | --- | --- | --- | --- | --- |
@@ -161,7 +161,7 @@ mvn test
 
 ```
 
-On the current development machine, the full test suite took 92 seconds in the latest run.
+On the current development machine, the full test suite took 2 minutes 58 seconds in the latest clean run.
 
 ## Current Position Counts for White to move
 
@@ -217,6 +217,8 @@ The forced first capture exception is split by the number of legal moves availab
 | `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 788 | 147 | 0 | 14 |
 | `KRvKN` | 1,567,222 | 1,166 | 6 | 856 | 40 | 0 | 14 |
 
+For `KBBvK`, the total number of potentially legal representative positions uses the bishop-colour-preserving symmetries of the theorem class. The checkmate, stalemate, and forced-capture sub-counts use the full board-symmetry representative count, because those event sets are invariant under the full board-symmetry group.
+
 ## External Cross-Checks
 
 The potentially legal position counts can be checked against the Syzygy tablebases. Syzygy uses Kirill Kryukov's [Number of Unique Legal Positions](https://kirill-kryukov.com/chess/nulp/) (NULP) definition. In that definition, a position includes side to move, castling rights, and en-passant rights, and "unique" means an equivalence class under easy symmetries such as board mirroring, board rotation, and color swapping. NULP looks at potentially legal positions as we do, thus the comparison is valid.
@@ -227,7 +229,7 @@ For example the potentially legal but in fact illegal positions `8/8/8/8/2N5/8/k
 
 The Syzygy site displays aggregate WDL outcomes, while its [machine-readable statistics](https://syzygy-tables.info/stats.json) keep the side to move separated. For example, the displayed `KRvK` value of 47,219 White wins is `21,959` White-to-move wins plus `25,260` Black-to-move losses.
 
-The table below gives the corresponding unique representative counts. The unique count is not always the raw count divided by 8, because symnetry operations can lead to identical positions.
+The table below gives the corresponding unique representative counts. The unique count is not always the raw count divided by 8, because symmetry operations can lead to identical positions.
 
 | Material class | Scope compared | Raw White to move | Raw Black to move | Raw total | Unique White to move | Unique Black to move | Unique total | Syzygy unique total | Comparison |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -242,7 +244,7 @@ The table below gives the corresponding unique representative counts. The unique
 
 The `KBBvK` line needs special care. The theorem is only about opposite-coloured bishops, with one light-square bishop and one dark-square bishop. The Syzygy material key `KBBvK` does not expose a separate statistic for opposite-coloured bishops; it counts the whole two-bishop material table in a generic two-bishop-slot convention. For that external comparison, the opposite-bishop subset is therefore converted to the same convention, the same-colour bishop subset is generated separately, and their sum matches Syzygy exactly.
 
-As a note the Syzygy WDL tables is adversarial tablebase so it cannot be used to deduce helpmate existence.
+The Syzygy WDL tables are adversarial tablebases, so they cannot be used to deduce helpmate existence.
 
 The regression test `TestSyzygyCountCrossCheck` independently recomputes all counts in this section without calling the main reachability analyzers.
 
@@ -251,7 +253,7 @@ The regression test `TestSyzygyCountCrossCheck` independently recomputes all cou
 Count agreement alone would still leave a theoretical worry: two different position sets can have the same size. For that reason the repository also contains an optional pointwise Syzygy probe:
 
 ```sh
-python scripts/verify_syzygy_position_sets.py
+python scripts/verify_syzygy_position_sets.py --tablebase PATH_TO_SYZYGY_TABLES
 
 ```
 

@@ -43,7 +43,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--tablebase",
-        default=r"C:\Users\danie\git\python-chess\data\syzygy\regular",
+        required=True,
         help="directory containing Syzygy .rtbw/.rtbz files",
     )
     parser.add_argument(
