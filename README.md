@@ -35,7 +35,7 @@ In chess, the FIDE rule on flag fall asks whether the opponent still has a helpm
 
 For familiar material classes this sounds almost obvious. One might try to give a direct geometric proof by separating cases such as "king in the corner", "king on the edge", and "king in the middle". In practice this is surprisingly fragile. Side to move, immediate checks, stalemates, forced captures, and positions being illegal or not all matter.
 
-The theorem is therefore proved by checking all positions in the finite material-class graph instead of relying on a hand proof over geometric cases.
+The theorem is therefore proved by going through all potentially legal positions in the finite material class instead of relying on a hand proof over geometric cases.
 
 A possible use is for an algorithm proving winnability for such positions. Instead of proving winnability by explicitly constructing a helpmate, the algorithm can rely on this theorem, and as such for these positions determine winnability more efficiently.
 
@@ -119,10 +119,10 @@ As mentioned this is not a counterexample. The catch is that this position is il
 
 1. White made the last move, because Black is to move.
 2. Black is in check, so White's last move must either move a checking piece to its current square or uncover a discovered check.
-3. The certificate verifies that there is a single checking white piece and that this piece is adjacent to the black king.
+3. The algorithm verifies that there is a single checking white piece and that this piece is adjacent to the black king.
 4. Because the checker is adjacent to the king, no discovered check is possible: there is no square between checker and king from which a blocker could have moved away.
 5. Therefore the checking piece itself must have moved to its present square.
-6. The certificate enumerates that checking piece's possible source squares.
+6. The algorithm enumerates that checking piece's possible source squares.
 7. If every source ray is blocked immediately, then the checking piece has no possible source square, so the position is illegal.
 
 ## Verification
@@ -140,7 +140,7 @@ The analyzer stores one witness move for every winning non-terminal state. The i
 5.  the successor is closer to a terminal mate layer.
     
 
-Thus the JUnit tests do not merely sample examples. They exhaust the finite state spaces and verify the recorded certificate edges with Ashlar's normal legal move generator.
+Thus the JUnit tests do not merely sample examples. They exhaust the finite state spaces and verify the recorded witness moves with Ashlar's normal legal move generator.
 
 Run:
 
@@ -149,7 +149,7 @@ mvn test
 
 ```
 
-On a notebook with a per 2026 average performance, this test suite takes roughly two minutes.
+On the current development machine, the full test suite took 92 seconds in the latest run.
 
 ## Current Position Counts for White to move
 
@@ -243,7 +243,7 @@ python scripts/verify_syzygy_position_sets.py
 
 ```
 
-The script generates one representative per relevant board-symmetry class and probes each representative against local Syzygy files with python-chess. It does not use the main reachability analyzers. Each generated record carries explicit piece symbols, and the script checks the actual Syzygy material key of the generated board before probing the WDL table for that key. With `--isolate-table`, the script creates a temporary directory for each selected material containing only that material's `.rtbw` and `.rtbz` files, so a wrong generated material cannot be satisfied by another table in the source directory. Missing table files fail with `FileNotFoundError`; python-chess does not download tables. On 30 May 2026, it was run against the local Syzygy files in with these results:
+The script generates one representative per relevant board-symmetry class and probes each representative against installed Syzygy files with python-chess. It does not use the main reachability analyzers. Each generated record carries explicit piece symbols, and the script checks the actual Syzygy material key of the generated board before probing the WDL table for that key. With `--isolate-table`, the script creates a temporary directory for each selected material containing only that material's `.rtbw` and `.rtbz` files, so a wrong generated material cannot be satisfied by another table in the source directory. Missing table files fail with `FileNotFoundError`; python-chess does not download tables. On 30 May 2026, it was run against the installed Syzygy files with these results:
 
 | Material class | Unique representatives probed |
 | --- | --- |
