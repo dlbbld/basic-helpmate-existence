@@ -9,52 +9,15 @@ import io.github.dlbbld.ashlarchess.common.Nulls;
 
 final class StrictIllegalityCertificates {
 
-  private static final int[][] KING_DELTAS = {
-      {-1, -1},
-      {-1, 0},
-      {-1, 1},
-      {0, -1},
-      {0, 1},
-      {1, -1},
-      {1, 0},
-      {1, 1}
-  };
+  private static final int[][] KING_DELTAS = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 },
+      { 1, 0 }, { 1, 1 } };
 
-  private static final int[][] BISHOP_DELTAS = {
-      {-1, -1},
-      {-1, 1},
-      {1, -1},
-      {1, 1}
-  };
+  private static final int[][] BISHOP_DELTAS = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
-  private static final int[][] ROOK_DELTAS = {
-      {-1, 0},
-      {0, -1},
-      {0, 1},
-      {1, 0}
-  };
+  private static final int[][] ROOK_DELTAS = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
 
-  private static final int[][] QUEEN_DELTAS = {
-      {-1, -1},
-      {-1, 0},
-      {-1, 1},
-      {0, -1},
-      {0, 1},
-      {1, -1},
-      {1, 0},
-      {1, 1}
-  };
-
-  private static final int[][] KNIGHT_DELTAS = {
-      {-2, -1},
-      {-2, 1},
-      {-1, -2},
-      {-1, 2},
-      {1, -2},
-      {1, 2},
-      {2, -1},
-      {2, 1}
-  };
+  private static final int[][] QUEEN_DELTAS = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 },
+      { 1, 0 }, { 1, 1 } };
 
   private StrictIllegalityCertificates() {
   }
@@ -201,8 +164,8 @@ final class StrictIllegalityCertificates {
     boolean isAttackedByWhite(int square, int forcedBlocker) {
       final var withForcedBlocker = withPiece(new Piece('#', Nulls.get(Square.REAL, forcedBlocker)));
       for (final var piece : pieces) {
-        if (Character.isUpperCase(piece.fenChar()) && attacks(piece.fenChar(), piece.square().ordinal(), square,
-            withForcedBlocker)) {
+        if (Character.isUpperCase(piece.fenChar())
+            && attacks(piece.fenChar(), piece.square().ordinal(), square, withForcedBlocker)) {
           return true;
         }
       }
@@ -211,10 +174,8 @@ final class StrictIllegalityCertificates {
 
     List<Piece> whiteAttackersToBlackKing() {
       final var blackKing = squareOf('k');
-      return pieces.stream()
-          .filter(piece -> Character.isUpperCase(piece.fenChar()))
-          .filter(piece -> attacks(piece.fenChar(), piece.square().ordinal(), blackKing, this))
-          .toList();
+      return pieces.stream().filter(piece -> Character.isUpperCase(piece.fenChar()))
+          .filter(piece -> attacks(piece.fenChar(), piece.square().ordinal(), blackKing, this)).toList();
     }
 
     boolean hasSourceSquareForSlidingPiece(Piece piece) {
@@ -226,7 +187,7 @@ final class StrictIllegalityCertificates {
       };
 
       for (final int[] delta : deltas) {
-        var source = offset(piece.square().ordinal(), delta);
+        final var source = offset(piece.square().ordinal(), delta);
         while (source != -1) {
           if (isOccupied(source)) {
             break;

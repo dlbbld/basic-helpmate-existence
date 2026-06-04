@@ -211,39 +211,6 @@ class TestSyzygyCountCrossCheck {
     return counter.count();
   }
 
-  private static Count countAllOrderedBishops() {
-    final var counter = new Counter();
-    for (var whiteKing = 0; whiteKing < 64; whiteKing++) {
-      for (var whiteBishop1 = 0; whiteBishop1 < 64; whiteBishop1++) {
-        if (whiteBishop1 == whiteKing) {
-          continue;
-        }
-        for (var whiteBishop2 = 0; whiteBishop2 < 64; whiteBishop2++) {
-          if (whiteBishop2 == whiteKing || whiteBishop2 == whiteBishop1) {
-            continue;
-          }
-          for (var blackKing = 0; blackKing < 64; blackKing++) {
-            if (blackKing == whiteKing || blackKing == whiteBishop1 || blackKing == whiteBishop2) {
-              continue;
-            }
-            final var blackInCheck = kingsTouch(whiteKing, blackKing)
-                || bishopAttacks(whiteBishop1, blackKing, whiteKing, whiteBishop2)
-                || bishopAttacks(whiteBishop2, blackKing, whiteKing, whiteBishop1);
-            if (!blackInCheck) {
-              counter.addWhiteToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
-                  FULL_BOARD_SYMMETRIES);
-            }
-            if (!kingsTouch(whiteKing, blackKing)) {
-              counter.addBlackToMove(new int[] {whiteKing, whiteBishop1, whiteBishop2, blackKing},
-                  FULL_BOARD_SYMMETRIES);
-            }
-          }
-        }
-      }
-    }
-    return counter.count();
-  }
-
   private static Count countSameColorBishops() {
     final var counter = new Counter();
     for (var whiteKing = 0; whiteKing < 64; whiteKing++) {
@@ -434,8 +401,8 @@ class TestSyzygyCountCrossCheck {
           all.cardinality());
     }
 
-    private void add(BitSet side, int[] pieces, boolean whiteToMove, int[] transformIndexes) {
-      final var canonical = canonical(pieces, whiteToMove, transformIndexes);
+    private void add(BitSet side, int[] pieces, boolean isWhiteToMove, int[] transformIndexes) {
+      final var canonical = canonical(pieces, isWhiteToMove, transformIndexes);
       side.set(canonical);
       all.set(canonical);
     }

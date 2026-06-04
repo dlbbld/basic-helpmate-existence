@@ -1,5 +1,6 @@
 package io.github.dlbbld.basiccheckmatereachability;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,42 +21,21 @@ final class BasicRookKnightHelpmateAnalysis {
   private static final int HAS_LEGAL_BLACK_MOVE = 1;
   private static final int HAS_MATERIAL_PRESERVING_BLACK_MOVE = 2;
 
-  private static final int[][] KING_DELTAS = {
-      {-1, -1},
-      {-1, 0},
-      {-1, 1},
-      {0, -1},
-      {0, 1},
-      {1, -1},
-      {1, 0},
-      {1, 1}
-  };
+  private static final int[][] KING_DELTAS = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 },
+      { 1, 0 }, { 1, 1 } };
 
-  private static final int[][] ROOK_DELTAS = {
-      {-1, 0},
-      {0, -1},
-      {0, 1},
-      {1, 0}
-  };
+  private static final int[][] ROOK_DELTAS = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
 
-  private static final int[][] KNIGHT_DELTAS = {
-      {-2, -1},
-      {-2, 1},
-      {-1, -2},
-      {-1, 2},
-      {1, -2},
-      {1, 2},
-      {2, -1},
-      {2, 1}
-  };
+  private static final int[][] KNIGHT_DELTAS = { { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 }, { 1, -2 }, { 1, 2 },
+      { 2, -1 }, { 2, 1 } };
 
   private BasicRookKnightHelpmateAnalysis() {
   }
 
   static AnalysisResult analyze() {
-    final BitSet legalStates = new BitSet(STATE_COUNT);
-    final BitSet winning = new BitSet(STATE_COUNT);
-    final IntQueue queue = new IntQueue();
+    final var legalStates = new BitSet(STATE_COUNT);
+    final var winning = new BitSet(STATE_COUNT);
+    final var queue = new IntQueue();
 
     var legalStateCount = 0;
     var whiteToMoveStateCount = 0;
@@ -160,16 +140,16 @@ final class BasicRookKnightHelpmateAnalysis {
     }
 
     return new AnalysisResult(legalStateCount, whiteToMoveStateCount, blackToMoveStateCount, blackCheckmateCount,
-        blackToMoveInCheckStateCount, blackToMoveStateCount - blackToMoveInCheckStateCount,
-        endedWhiteToMoveStateCount, reducibleWhiteToMoveStateCount, unwinnableWhiteToMoveStateCount,
-        reducibleWhiteToMoveStates, unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
+        blackToMoveInCheckStateCount, blackToMoveStateCount - blackToMoveInCheckStateCount, endedWhiteToMoveStateCount,
+        reducibleWhiteToMoveStateCount, unwinnableWhiteToMoveStateCount, reducibleWhiteToMoveStates,
+        unwinnableWhiteToMoveRepresentatives, winning.cardinality(),
         blackToMoveStateCount - blackCheckmateCount - stalemateStateCount, forcedRookCaptureStateCount,
         forcedRookCaptureRepresentatives, stalemateStateCount, stalemateRepresentatives, counterexampleStateCount,
         counterexampleRepresentatives);
   }
 
   static String format(AnalysisResult result) {
-    final StringBuilder sb = new StringBuilder();
+    final var sb = new StringBuilder();
     sb.append("KRvKN states").append('\n');
     sb.append("legal states: ").append(result.legalStateCount()).append('\n');
     sb.append("white-to-move states: ").append(result.whiteToMoveStateCount()).append('\n');
@@ -306,7 +286,7 @@ final class BasicRookKnightHelpmateAnalysis {
 
   private static boolean hasWhiteCaptureToWinningRookEndgame(int whiteKing, int whiteRook, int blackKing,
       int blackKnight) {
-    if (areKingsAdjacent(blackKnight, whiteKing) && isWhiteMoveLegal(blackKnight, whiteRook, blackKing, -1)) {
+    if (areKingsAdjacent(blackKnight, whiteKing) && isWhiteMoveLegal(blackKnight, blackKing, -1)) {
       return isRookEndgameKnownWinningForWhite(blackKnight, whiteRook, blackKing);
     }
 
@@ -317,7 +297,7 @@ final class BasicRookKnightHelpmateAnalysis {
           break;
         }
         if (target == blackKnight) {
-          return isWhiteMoveLegal(whiteKing, target, blackKing, -1)
+          return isWhiteMoveLegal(whiteKing, blackKing, -1)
               && isRookEndgameKnownWinningForWhite(whiteKing, target, blackKing);
         }
         target = offset(target, delta);
@@ -333,7 +313,7 @@ final class BasicRookKnightHelpmateAnalysis {
         continue;
       }
       final var knightAfterMove = target == blackKnight ? -1 : blackKnight;
-      if (isWhiteMoveLegal(target, whiteRook, blackKing, knightAfterMove)) {
+      if (isWhiteMoveLegal(target, blackKing, knightAfterMove)) {
         return true;
       }
     }
@@ -345,7 +325,7 @@ final class BasicRookKnightHelpmateAnalysis {
           break;
         }
         final var knightAfterMove = target == blackKnight ? -1 : blackKnight;
-        if (isWhiteMoveLegal(whiteKing, target, blackKing, knightAfterMove)) {
+        if (isWhiteMoveLegal(whiteKing, blackKing, knightAfterMove)) {
           return true;
         }
         if (target == blackKnight) {
@@ -357,9 +337,8 @@ final class BasicRookKnightHelpmateAnalysis {
     return false;
   }
 
-  private static boolean isWhiteMoveLegal(int whiteKing, int whiteRook, int blackKing, int blackKnight) {
-    return !areKingsAdjacent(whiteKing, blackKing)
-        && (blackKnight == -1 || !isKnightAttack(blackKnight, whiteKing));
+  private static boolean isWhiteMoveLegal(int whiteKing, int blackKing, int blackKnight) {
+    return !areKingsAdjacent(whiteKing, blackKing) && (blackKnight == -1 || !isKnightAttack(blackKnight, whiteKing));
   }
 
   private static boolean isRookEndgameKnownWinningForWhite(int whiteKing, int whiteRook, int blackKing) {
@@ -391,14 +370,13 @@ final class BasicRookKnightHelpmateAnalysis {
   }
 
   private static boolean isRookEndgameBlackInCheck(int whiteKing, int whiteRook, int blackKing) {
-    return areKingsAdjacent(whiteKing, blackKing)
-        || isRookAttack(whiteRook, whiteKing, -1, blackKing);
+    return areKingsAdjacent(whiteKing, blackKing) || isRookAttack(whiteRook, whiteKing, -1, blackKing);
   }
 
   private static boolean isLegalState(int whiteKing, int whiteRook, int blackKing, int blackKnight, int havingMove) {
     return switch (havingMove) {
       case WHITE_TO_MOVE -> !isBlackInCheck(whiteKing, whiteRook, blackKing, blackKnight);
-      case BLACK_TO_MOVE -> !isWhiteInCheck(whiteKing, whiteRook, blackKing, blackKnight);
+      case BLACK_TO_MOVE -> !isWhiteInCheck(whiteKing, blackKing, blackKnight);
       default -> throw new IllegalArgumentException();
     };
   }
@@ -407,7 +385,7 @@ final class BasicRookKnightHelpmateAnalysis {
     return areKingsAdjacent(whiteKing, blackKing) || isRookAttack(whiteRook, whiteKing, blackKnight, blackKing);
   }
 
-  private static boolean isWhiteInCheck(int whiteKing, int whiteRook, int blackKing, int blackKnight) {
+  private static boolean isWhiteInCheck(int whiteKing, int blackKing, int blackKnight) {
     return areKingsAdjacent(whiteKing, blackKing) || isKnightAttack(blackKnight, whiteKing);
   }
 
@@ -514,8 +492,7 @@ final class BasicRookKnightHelpmateAnalysis {
     };
   }
 
-  private static NavigableSet<RookKnightState> canonicalRepresentatives(
-      Collection<RookKnightState> states) {
+  private static NavigableSet<RookKnightState> canonicalRepresentatives(Collection<RookKnightState> states) {
     final NavigableSet<RookKnightState> result = new TreeSet<>();
     for (final RookKnightState state : states) {
       result.add(canonical(state));
@@ -524,9 +501,9 @@ final class BasicRookKnightHelpmateAnalysis {
   }
 
   private static RookKnightState canonical(RookKnightState state) {
-    RookKnightState result = state;
+    var result = state;
     for (var transformIndex = 1; transformIndex < 8; transformIndex++) {
-      final RookKnightState transformed = transform(state, transformIndex);
+      final var transformed = transform(state, transformIndex);
       if (transformed.compareTo(result) < 0) {
         result = transformed;
       }
@@ -584,23 +561,21 @@ final class BasicRookKnightHelpmateAnalysis {
   }
 
   private static String toFen(RookKnightState state) {
-    final char[] board = new char[64];
-    for (int i = 0; i < board.length; i++) {
-      board[i] = '1';
-    }
+    final var board = new char[64];
+    Arrays.fill(board, '1');
     board[state.whiteKing().ordinal()] = 'K';
     board[state.whiteRook().ordinal()] = 'R';
     board[state.blackKing().ordinal()] = 'k';
     board[state.blackKnight().ordinal()] = 'n';
 
-    final StringBuilder sb = new StringBuilder();
-    for (int rank = 7; rank >= 0; rank--) {
+    final var sb = new StringBuilder();
+    for (var rank = 7; rank >= 0; rank--) {
       if (rank < 7) {
         sb.append('/');
       }
       var emptyCount = 0;
-      for (int file = 0; file < 8; file++) {
-        final char piece = board[rank * 8 + file];
+      for (var file = 0; file < 8; file++) {
+        final var piece = board[rank * 8 + file];
         if (piece == '1') {
           emptyCount++;
         } else {
@@ -628,7 +603,7 @@ final class BasicRookKnightHelpmateAnalysis {
     final var whiteRook = state.whiteRook().ordinal();
     final var blackKing = state.blackKing().ordinal();
     final var blackKnight = state.blackKnight().ordinal();
-    final StringBuilder sb = new StringBuilder();
+    final var sb = new StringBuilder();
 
     appendLegalBlackKingMoves(sb, whiteKing, whiteRook, blackKing, blackKnight);
     appendLegalBlackKnightMoves(sb, whiteKing, whiteRook, blackKing, blackKnight);
@@ -680,8 +655,8 @@ final class BasicRookKnightHelpmateAnalysis {
     }
   }
 
-  record RookKnightState(Square whiteKing, Square whiteRook, Square blackKing, Square blackKnight,
-      Side havingMove) implements Comparable<RookKnightState> {
+  record RookKnightState(Square whiteKing, Square whiteRook, Square blackKing, Square blackKnight, Side havingMove)
+      implements Comparable<RookKnightState> {
 
     @Override
     public int compareTo(RookKnightState other) {
@@ -705,8 +680,7 @@ final class BasicRookKnightHelpmateAnalysis {
       int blackCheckmateCount, int blackToMoveInCheckStateCount, int blackToMoveNotInCheckStateCount,
       int endedWhiteToMoveStateCount, int reducibleWhiteToMoveStateCount, int unwinnableWhiteToMoveStateCount,
       Set<RookKnightState> reducibleWhiteToMoveStates, Set<RookKnightState> unwinnableWhiteToMoveRepresentatives,
-      int winningStateCount,
-      int ongoingBlackToMoveStateCount, int forcedRookCaptureStateCount,
+      int winningStateCount, int ongoingBlackToMoveStateCount, int forcedRookCaptureStateCount,
       Set<RookKnightState> forcedRookCaptureRepresentatives, int stalemateStateCount,
       Set<RookKnightState> stalemateRepresentatives, int counterexampleStateCount,
       Set<RookKnightState> counterexampleRepresentatives) {
@@ -752,10 +726,9 @@ final class BasicRookKnightHelpmateAnalysis {
         return;
       }
 
-      final int[] grown = new int[elements.length * 2];
+      final var grown = new int[elements.length * 2];
       System.arraycopy(elements, 0, grown, 0, elements.length);
       elements = grown;
     }
   }
 }
-
