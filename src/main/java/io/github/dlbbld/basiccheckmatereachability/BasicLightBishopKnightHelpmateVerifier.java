@@ -6,8 +6,7 @@ import java.util.Set;
 import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.ashlarchess.common.Nulls;
-import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
+import io.github.dlbbld.ashlarchess.board.MoveSpecification;
 
 final class BasicLightBishopKnightHelpmateVerifier {
 
@@ -424,7 +423,7 @@ final class BasicLightBishopKnightHelpmateVerifier {
   }
 
   private static Square square(int square) {
-    return Nulls.get(Square.REAL, square);
+    return Square.REAL.get(square);
   }
 
   private static Side side(int havingMove) {

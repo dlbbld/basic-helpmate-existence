@@ -6,7 +6,7 @@
 
   <groupId>io.github.dlbbld</groupId>
   <artifactId>basic-helpmate-existence</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 
   <name>Basic Helpmate Existence</name>
   <description>Finite-state proof of helpmate existence for selected basic chess endgames.</description>
@@ -30,7 +30,7 @@
     <dependency>
       <groupId>io.github.dlbbld</groupId>
       <artifactId>ashlar-chess</artifactId>
-      <version>17.0.0</version>
+      <version>20.0.0</version>
     </dependency>
 
     <dependency>
