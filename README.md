@@ -161,7 +161,7 @@ mvn test
 
 ```
 
-On the current development machine, the full test suite took roughly 3 minutes in the latest clean run.
+On the current development machine, the full test suite took roughly 2 minutes 15 seconds in the latest clean run.
 
 ## Current Position Counts for White to move
 
