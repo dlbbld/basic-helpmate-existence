@@ -13,8 +13,7 @@ import java.util.TreeSet;
 import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.ashlarchess.common.Nulls;
-import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
+import io.github.dlbbld.ashlarchess.board.MoveSpecification;
 
 final class BasicMajorPieceHelpmateAnalysis {
 
@@ -47,7 +46,7 @@ final class BasicMajorPieceHelpmateAnalysis {
         continue;
       }
 
-      final Set<MoveSpecification> legalMoves = Nulls.get(legalMovesByState, state);
+      final Set<MoveSpecification> legalMoves = legalMovesByState.get(state);
       final var hasLegalMove = !legalMoves.isEmpty();
       final var hasNonCaptureMove = hasNonCaptureMove(state, legalMoves);
 
@@ -147,7 +146,7 @@ final class BasicMajorPieceHelpmateAnalysis {
     final Set<MajorPieceState> result = new HashSet<>();
     for (final MajorPieceState state : states) {
       if (state.havingMove() == Side.BLACK && toBitboardPosition(whiteMajorPiece, state).isInCheck(Side.BLACK)
-          && Nulls.get(legalMovesByState, state).isEmpty()) {
+          && legalMovesByState.get(state).isEmpty()) {
         result.add(state);
       }
     }
@@ -301,7 +300,7 @@ final class BasicMajorPieceHelpmateAnalysis {
       }
       default -> throw new IllegalArgumentException("transformIndex out of range: " + transformIndex);
     }
-    return Nulls.get(Square.REAL, transformedRank * 8 + transformedFile);
+    return Square.REAL.get(transformedRank * 8 + transformedFile);
   }
 
   private static BitboardPosition toBitboardPosition(WhiteMajorPiece whiteMajorPiece, MajorPieceState state) {

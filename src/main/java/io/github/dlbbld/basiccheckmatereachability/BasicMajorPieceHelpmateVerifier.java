@@ -13,8 +13,7 @@ import java.util.Set;
 import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.ashlarchess.common.Nulls;
-import io.github.dlbbld.ashlarchess.common.model.MoveSpecification;
+import io.github.dlbbld.ashlarchess.board.MoveSpecification;
 import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.MajorPieceState;
 import io.github.dlbbld.basiccheckmatereachability.BasicMajorPieceHelpmateAnalysis.WhiteMajorPiece;
 
@@ -86,7 +85,7 @@ final class BasicMajorPieceHelpmateVerifier {
     final Set<MajorPieceState> result = new HashSet<>();
     for (final MajorPieceState state : states) {
       if (state.havingMove() == Side.BLACK && toBitboardPosition(whiteMajorPiece, state).isInCheck(Side.BLACK)
-          && Nulls.get(legalMovesByState, state).isEmpty()) {
+          && legalMovesByState.get(state).isEmpty()) {
         result.add(state);
       }
     }
@@ -108,7 +107,7 @@ final class BasicMajorPieceHelpmateVerifier {
     var maximumDistance = 0;
     while (!queue.isEmpty()) {
       final MajorPieceState state = queue.removeFirst();
-      final var predecessorDistance = Nulls.get(distanceByState, state) + 1;
+      final var predecessorDistance = distanceByState.get(state) + 1;
       for (final WitnessEdge edge : predecessors.getOrDefault(state, Set.of())) {
         if (winning.add(edge.source())) {
           witnessByState.put(edge.source(), edge.move());
@@ -167,7 +166,7 @@ final class BasicMajorPieceHelpmateVerifier {
       if (!certificate.winning().contains(target)) {
         throw new AssertionError("Witness target is not winning: " + state + " " + witness);
       }
-      if (Nulls.get(certificate.distanceByState(), target) >= Nulls.get(certificate.distanceByState(), state)) {
+      if (certificate.distanceByState().get(target) >= certificate.distanceByState().get(state)) {
         throw new AssertionError("Witness does not descend toward mate: " + state + " " + witness);
       }
       result++;
@@ -183,7 +182,7 @@ final class BasicMajorPieceHelpmateVerifier {
       if (state.havingMove() != Side.BLACK || checkmates.contains(state)) {
         continue;
       }
-      final Set<MoveSpecification> legalMoves = Nulls.get(legalMovesByState, state);
+      final Set<MoveSpecification> legalMoves = legalMovesByState.get(state);
       if (legalMoves.isEmpty()) {
         if (toBitboardPosition(whiteMajorPiece, state).isInCheck(Side.BLACK)) {
           throw new AssertionError("Non-terminal black-to-move state has no legal moves while in check: " + state);
@@ -204,7 +203,7 @@ final class BasicMajorPieceHelpmateVerifier {
     var result = 0;
     for (final MajorPieceState state : certificate.winning()) {
       if (state.havingMove() == havingMove) {
-        result = Math.max(result, Nulls.get(certificate.distanceByState(), state));
+        result = Math.max(result, certificate.distanceByState().get(state));
       }
     }
     return result;

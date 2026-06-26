@@ -161,7 +161,7 @@ mvn test
 
 ```
 
-On the current development machine, the full test suite took 2 minutes 58 seconds in the latest clean run.
+On the current development machine, the full test suite took roughly 3 minutes in the latest clean run.
 
 ## Current Position Counts for White to move
 
@@ -279,7 +279,7 @@ This project uses the Maven Central release of Ashlar Chess:
 <dependency>
   <groupId>io.github.dlbbld</groupId>
   <artifactId>ashlar-chess</artifactId>
-  <version>17.0.0</version>
+  <version>20.0.0</version>
 </dependency>
 
 ```

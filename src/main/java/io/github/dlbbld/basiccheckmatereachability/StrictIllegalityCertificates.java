@@ -5,7 +5,6 @@ import java.util.List;
 
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.ashlarchess.common.Nulls;
 
 final class StrictIllegalityCertificates {
 
@@ -162,7 +161,7 @@ final class StrictIllegalityCertificates {
     }
 
     boolean isAttackedByWhite(int square, int forcedBlocker) {
-      final var withForcedBlocker = withPiece(new Piece('#', Nulls.get(Square.REAL, forcedBlocker)));
+      final var withForcedBlocker = withPiece(new Piece('#', Square.REAL.get(forcedBlocker)));
       for (final var piece : pieces) {
         if (Character.isUpperCase(piece.fenChar())
             && attacks(piece.fenChar(), piece.square().ordinal(), square, withForcedBlocker)) {

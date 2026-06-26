@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
-import io.github.dlbbld.ashlarchess.common.Nulls;
 
 final class BasicRookKnightHelpmateAnalysis {
 
@@ -481,7 +480,7 @@ final class BasicRookKnightHelpmateAnalysis {
   }
 
   private static Square square(int square) {
-    return Nulls.get(Square.REAL, square);
+    return Square.REAL.get(square);
   }
 
   private static Side side(int havingMove) {
@@ -557,7 +556,7 @@ final class BasicRookKnightHelpmateAnalysis {
       }
       default -> throw new IllegalArgumentException("transformIndex out of range: " + transformIndex);
     }
-    return Nulls.get(Square.REAL, transformedRank * 8 + transformedFile);
+    return Square.REAL.get(transformedRank * 8 + transformedFile);
   }
 
   private static String toFen(RookKnightState state) {
