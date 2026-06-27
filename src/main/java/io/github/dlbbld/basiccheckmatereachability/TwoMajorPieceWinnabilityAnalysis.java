@@ -38,7 +38,11 @@ final class TwoMajorPieceWinnabilityAnalysis {
         counts.twoMajorStalemateStateCount, exactTwo.twoMajorOngoingStateCount(),
         exactTwo.twoMajorUnwinnableOngoingStateCount(), exactTwo.twoMajorForcedFirstCaptureStateCount(),
         exactTwo.twoMajorForcedFirstCaptureOneMoveStateCount(), exactTwo.twoMajorForcedFirstCaptureTwoMoveStateCount(),
-        winning.cardinality(), maximumDistance);
+        exactTwo.twoMajorRepresentativeCount(), exactTwo.twoMajorCheckmateRepresentativeCount(),
+        exactTwo.twoMajorStalemateRepresentativeCount(), exactTwo.twoMajorOngoingRepresentativeCount(),
+        exactTwo.twoMajorUnwinnableOngoingRepresentativeCount(),
+        exactTwo.twoMajorForcedFirstCaptureOneMoveRepresentativeCount(),
+        exactTwo.twoMajorForcedFirstCaptureTwoMoveRepresentativeCount(), winning.cardinality(), maximumDistance);
   }
 
   private static void enumerateStates(MajorPiece majorPiece, BitSet legalStates, BitSet checkmates, BitSet stalemates,
@@ -132,13 +136,32 @@ final class TwoMajorPieceWinnabilityAnalysis {
     var forcedFirstCapture = 0;
     var forcedFirstCaptureOneMove = 0;
     var forcedFirstCaptureTwoMoves = 0;
+    final var representatives = new BitSet();
+    final var checkmateRepresentatives = new BitSet();
+    final var stalemateRepresentatives = new BitSet();
+    final var ongoingRepresentatives = new BitSet();
+    final var unwinnableOngoingRepresentatives = new BitSet();
+    final var forcedFirstCaptureOneMoveRepresentatives = new BitSet();
+    final var forcedFirstCaptureTwoMoveRepresentatives = new BitSet();
     for (var state = legalStates.nextSetBit(0); state >= 0; state = legalStates.nextSetBit(state + 1)) {
-      if (!isTwoMajorState(secondMajor(state)) || checkmates.get(state) || stalemates.get(state)) {
+      if (!isTwoMajorState(secondMajor(state))) {
         continue;
       }
+      final var representative = canonical(state);
+      representatives.set(representative);
+      if (checkmates.get(state)) {
+        checkmateRepresentatives.set(representative);
+        continue;
+      }
+      if (stalemates.get(state)) {
+        stalemateRepresentatives.set(representative);
+        continue;
+      }
+      ongoingRepresentatives.set(representative);
       ongoing++;
       if (!winning.get(state)) {
         unwinnableOngoing++;
+        unwinnableOngoingRepresentatives.set(representative);
       }
       if (havingMove(state) == BLACK_TO_MOVE) {
         final var moveCount = legalMoveCount(majorPiece, whiteKing(state), firstMajor(state), secondMajor(state),
@@ -148,14 +171,19 @@ final class TwoMajorPieceWinnabilityAnalysis {
           forcedFirstCapture++;
           if (moveCount == 1) {
             forcedFirstCaptureOneMove++;
+            forcedFirstCaptureOneMoveRepresentatives.set(representative);
           } else if (moveCount == 2) {
             forcedFirstCaptureTwoMoves++;
+            forcedFirstCaptureTwoMoveRepresentatives.set(representative);
           }
         }
       }
     }
     return new ExactTwoCounts(ongoing, unwinnableOngoing, forcedFirstCapture, forcedFirstCaptureOneMove,
-        forcedFirstCaptureTwoMoves);
+        forcedFirstCaptureTwoMoves, representatives.cardinality(), checkmateRepresentatives.cardinality(),
+        stalemateRepresentatives.cardinality(), ongoingRepresentatives.cardinality(),
+        unwinnableOngoingRepresentatives.cardinality(), forcedFirstCaptureOneMoveRepresentatives.cardinality(),
+        forcedFirstCaptureTwoMoveRepresentatives.cardinality());
   }
 
   private static int addWhitePredecessors(MajorPiece majorPiece, BitSet legalStates, BitSet winning,
@@ -472,6 +500,63 @@ final class TwoMajorPieceWinnabilityAnalysis {
     return rank * 8 + file;
   }
 
+  private static int canonical(int state) {
+    var result = state;
+    for (var transformIndex = 1; transformIndex < 8; transformIndex++) {
+      final var transformedFirstMajor = transform(firstMajor(state), transformIndex);
+      final var transformedSecondMajor = transform(secondMajor(state), transformIndex);
+      final var transformed = encode(transform(whiteKing(state), transformIndex),
+          Math.min(transformedFirstMajor, transformedSecondMajor),
+          Math.max(transformedFirstMajor, transformedSecondMajor), transform(blackKing(state), transformIndex),
+          havingMove(state));
+      result = Math.min(result, transformed);
+    }
+    return result;
+  }
+
+  private static int transform(int square, int transformIndex) {
+    final var file = file(square);
+    final var rank = rank(square);
+    final int transformedFile;
+    final int transformedRank;
+    switch (transformIndex) {
+      case 0 -> {
+        transformedFile = file;
+        transformedRank = rank;
+      }
+      case 1 -> {
+        transformedFile = 7 - file;
+        transformedRank = rank;
+      }
+      case 2 -> {
+        transformedFile = file;
+        transformedRank = 7 - rank;
+      }
+      case 3 -> {
+        transformedFile = 7 - file;
+        transformedRank = 7 - rank;
+      }
+      case 4 -> {
+        transformedFile = rank;
+        transformedRank = file;
+      }
+      case 5 -> {
+        transformedFile = 7 - rank;
+        transformedRank = file;
+      }
+      case 6 -> {
+        transformedFile = rank;
+        transformedRank = 7 - file;
+      }
+      case 7 -> {
+        transformedFile = 7 - rank;
+        transformedRank = 7 - file;
+      }
+      default -> throw new IllegalArgumentException("transformIndex out of range: " + transformIndex);
+    }
+    return square(transformedFile, transformedRank);
+  }
+
   enum MajorPiece {
     ROOK("KRRvK", ROOK_DELTAS) {
       @Override
@@ -511,12 +596,20 @@ final class TwoMajorPieceWinnabilityAnalysis {
       int checkmateStateCount, int stalemateStateCount, int twoMajorCheckmateStateCount,
       int twoMajorStalemateStateCount, int twoMajorOngoingStateCount, int twoMajorUnwinnableOngoingStateCount,
       int twoMajorForcedFirstCaptureStateCount, int twoMajorForcedFirstCaptureOneMoveStateCount,
-      int twoMajorForcedFirstCaptureTwoMoveStateCount, int winningStateCount, int maximumDistance) {
+      int twoMajorForcedFirstCaptureTwoMoveStateCount, int twoMajorRepresentativeCount,
+      int twoMajorCheckmateRepresentativeCount, int twoMajorStalemateRepresentativeCount,
+      int twoMajorOngoingRepresentativeCount, int twoMajorUnwinnableOngoingRepresentativeCount,
+      int twoMajorForcedFirstCaptureOneMoveRepresentativeCount,
+      int twoMajorForcedFirstCaptureTwoMoveRepresentativeCount, int winningStateCount, int maximumDistance) {
   }
 
   private record ExactTwoCounts(int twoMajorOngoingStateCount, int twoMajorUnwinnableOngoingStateCount,
       int twoMajorForcedFirstCaptureStateCount, int twoMajorForcedFirstCaptureOneMoveStateCount,
-      int twoMajorForcedFirstCaptureTwoMoveStateCount) {
+      int twoMajorForcedFirstCaptureTwoMoveStateCount, int twoMajorRepresentativeCount,
+      int twoMajorCheckmateRepresentativeCount, int twoMajorStalemateRepresentativeCount,
+      int twoMajorOngoingRepresentativeCount, int twoMajorUnwinnableOngoingRepresentativeCount,
+      int twoMajorForcedFirstCaptureOneMoveRepresentativeCount,
+      int twoMajorForcedFirstCaptureTwoMoveRepresentativeCount) {
   }
 
   private static final class MutableCounts {

@@ -24,6 +24,16 @@ public class GenerateTwoMajorPieceWinnabilityAnalysis {
         result.twoMajorForcedFirstCaptureOneMoveStateCount());
     System.out.printf("two-major forced first capture states, total two moves: %,d%n",
         result.twoMajorForcedFirstCaptureTwoMoveStateCount());
+    System.out.printf("two-major representative positions: %,d%n", result.twoMajorRepresentativeCount());
+    System.out.printf("two-major checkmate representatives: %,d%n", result.twoMajorCheckmateRepresentativeCount());
+    System.out.printf("two-major stalemate representatives: %,d%n", result.twoMajorStalemateRepresentativeCount());
+    System.out.printf("two-major ongoing representatives: %,d%n", result.twoMajorOngoingRepresentativeCount());
+    System.out.printf("two-major unwinnable ongoing representatives: %,d%n",
+        result.twoMajorUnwinnableOngoingRepresentativeCount());
+    System.out.printf("two-major forced first capture representatives, total one move: %,d%n",
+        result.twoMajorForcedFirstCaptureOneMoveRepresentativeCount());
+    System.out.printf("two-major forced first capture representatives, total two moves: %,d%n",
+        result.twoMajorForcedFirstCaptureTwoMoveRepresentativeCount());
     System.out.printf("winning states in combined one/two-major space: %,d%n", result.winningStateCount());
     System.out.printf("maximum helpmate plies in combined space: %,d%n%n", result.maximumDistance());
   }
