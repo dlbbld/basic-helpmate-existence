@@ -78,6 +78,12 @@ public class GenerateWhiteToMoveReachabilitySummary {
         rookKnight.unwinnableWhiteToMoveRepresentatives().size());
     printNonOngoingOrReducible(rookKnight.endedWhiteToMoveStateCount(), rookKnight.reducibleWhiteToMoveStateCount());
 
+    final var twoKnights = BasicTwoKnightsHelpmateAnalysis.analyze();
+    final var twoKnightsVerification = BasicFourPieceHelpmateVerifier.verifyKnnvK();
+    final var twoKnightsTerminals = whiteTerminalCountsKnnvK();
+    print("KNNvK", twoKnights.whiteToMoveStateCount(), twoKnights.unwinnableWhiteToMoveStateCount(),
+        twoKnights.unwinnableWhiteToMoveRepresentatives().size());
+
     System.out.println();
     System.out.println("White-to-move all potentially legal positions:");
     System.out.println(
@@ -102,6 +108,9 @@ public class GenerateWhiteToMoveReachabilitySummary {
     printWhiteTableRow("KRvKN", rookKnight.whiteToMoveStateCount(), rookKnightTerminals.checkmates(),
         rookKnightTerminals.stalemates(), rookKnight.unwinnableWhiteToMoveStateCount(),
         rookKnightVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KNNvK", twoKnights.whiteToMoveStateCount(), twoKnightsTerminals.checkmates(),
+        twoKnightsTerminals.stalemates(), twoKnights.unwinnableWhiteToMoveStateCount(),
+        twoKnightsVerification.maximumWhiteToMoveDistance());
 
     System.out.println();
     System.out.println("White-to-move potentially legal positions reduced to representative cases:");
@@ -129,6 +138,9 @@ public class GenerateWhiteToMoveReachabilitySummary {
     printWhiteTableRow("KRvKN", 1347906, rookKnightTerminals.checkmateRepresentatives(),
         rookKnightTerminals.stalemateRepresentatives(), rookKnight.unwinnableWhiteToMoveRepresentatives().size(),
         rookKnightVerification.maximumWhiteToMoveDistance());
+    printWhiteTableRow("KNNvK", 719130, twoKnightsTerminals.checkmateRepresentatives(),
+        twoKnightsTerminals.stalemateRepresentatives(), twoKnights.unwinnableWhiteToMoveRepresentatives().size(),
+        twoKnightsVerification.maximumWhiteToMoveDistance());
 
     System.out.println();
     System.out.println("Black-to-move local exception:");
@@ -147,6 +159,9 @@ public class GenerateWhiteToMoveReachabilitySummary {
     }
     for (final var state : rookKnight.unwinnableWhiteToMoveRepresentatives()) {
       printPositionRow("KRvKN", toFen(state), "unexpected local exception");
+    }
+    for (final var state : twoKnights.unwinnableWhiteToMoveRepresentatives()) {
+      printPositionRow("KNNvK", BasicTwoKnightsHelpmateAnalysis.toFen(state), "unexpected local exception");
     }
   }
 
@@ -336,6 +351,32 @@ public class GenerateWhiteToMoveReachabilitySummary {
                 bit(blackKnight), 0L, 0L, bit(blackKing));
             accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('R', whiteRook),
                 new PieceOnSquare('k', blackKing), new PieceOnSquare('n', blackKnight));
+          }
+        }
+      }
+    }
+    return accumulator.toCounts();
+  }
+
+  private static WhiteTerminalCounts whiteTerminalCountsKnnvK() {
+    final var accumulator = new WhiteTerminalAccumulator(0, 1, 2, 3, 4, 5, 6, 7);
+    for (final Square whiteKing : Square.REAL) {
+      for (final Square whiteKnightA : Square.REAL) {
+        if (whiteKnightA == whiteKing) {
+          continue;
+        }
+        for (final Square whiteKnightB : Square.REAL) {
+          if (whiteKnightB.ordinal() <= whiteKnightA.ordinal() || whiteKnightB == whiteKing) {
+            continue;
+          }
+          for (final Square blackKing : Square.REAL) {
+            if (blackKing == whiteKing || blackKing == whiteKnightA || blackKing == whiteKnightB) {
+              continue;
+            }
+            final var position = new BitboardPosition(0L, 0L, bit(whiteKnightA) | bit(whiteKnightB), 0L, 0L,
+                bit(whiteKing), 0L, 0L, 0L, 0L, 0L, bit(blackKing));
+            accumulator.add(position, new PieceOnSquare('K', whiteKing), new PieceOnSquare('N', whiteKnightA),
+                new PieceOnSquare('N', whiteKnightB), new PieceOnSquare('k', blackKing));
           }
         }
       }

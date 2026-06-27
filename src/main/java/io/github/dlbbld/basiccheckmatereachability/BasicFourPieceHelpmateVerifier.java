@@ -43,6 +43,10 @@ final class BasicFourPieceHelpmateVerifier {
     return verify(Material.ROOK_KNIGHT);
   }
 
+  static VerificationResult verifyKnnvK() {
+    return verify(Material.TWO_KNIGHTS);
+  }
+
   private static VerificationResult verify(Material material) {
     final var legalStates = new BitSet(STATE_COUNT);
     final var checkmates = new BitSet(STATE_COUNT);
@@ -144,7 +148,7 @@ final class BasicFourPieceHelpmateVerifier {
       if (target == NO_WITNESS) {
         continue;
       }
-      final var witness = Material.moveBetween(state, target);
+      final var witness = material.moveBetween(state, target);
       final var legalMoves = material.toBitboardPosition(state).legalMoves(side(havingMove(state)), 0L);
       if (!legalMoves.contains(witness)) {
         throw new AssertionError("Witness is not legal: " + state + " " + witness);
@@ -326,7 +330,8 @@ final class BasicFourPieceHelpmateVerifier {
   enum Material {
     OPPOSITE_BISHOPS("KBBvK"),
     ROOK_LIGHT_BISHOP("KRvKB(light bishop)"),
-    ROOK_KNIGHT("KRvKN");
+    ROOK_KNIGHT("KRvKN"),
+    TWO_KNIGHTS("KNNvK");
 
     private final String name;
 
@@ -347,12 +352,13 @@ final class BasicFourPieceHelpmateVerifier {
         case OPPOSITE_BISHOPS -> isLightSquare(second) && !isLightSquare(third);
         case ROOK_LIGHT_BISHOP -> isLightSquare(fourth);
         case ROOK_KNIGHT -> true;
+        case TWO_KNIGHTS -> second < third;
       };
     }
 
     boolean isLegalState(int first, int second, int third, int fourth, int havingMove) {
       return switch (this) {
-        case OPPOSITE_BISHOPS -> switch (havingMove) {
+        case OPPOSITE_BISHOPS, TWO_KNIGHTS -> switch (havingMove) {
           case WHITE_TO_MOVE -> !isBlackInCheck(first, second, third, fourth);
           case BLACK_TO_MOVE -> !areKingsAdjacent(first, fourth);
           default -> throw new IllegalArgumentException();
@@ -371,12 +377,14 @@ final class BasicFourPieceHelpmateVerifier {
             || isBishopAttack(third, second, first, fourth);
         case ROOK_LIGHT_BISHOP -> areKingsAdjacent(first, third) || isRookAttack(second, first, fourth, third);
         case ROOK_KNIGHT -> areKingsAdjacent(first, third) || isRookAttack(second, first, fourth, third);
+        case TWO_KNIGHTS -> areKingsAdjacent(first, fourth) || isKnightAttack(second, fourth)
+            || isKnightAttack(third, fourth);
       };
     }
 
     private boolean isWhiteInCheck(int first, int second, int third, int fourth) {
       return switch (this) {
-        case OPPOSITE_BISHOPS -> throw new IllegalStateException();
+        case OPPOSITE_BISHOPS, TWO_KNIGHTS -> throw new IllegalStateException();
         case ROOK_LIGHT_BISHOP -> areKingsAdjacent(first, third) || isBishopAttack(fourth, third, second, first);
         case ROOK_KNIGHT -> areKingsAdjacent(first, third) || isKnightAttack(fourth, first);
       };
@@ -387,6 +395,7 @@ final class BasicFourPieceHelpmateVerifier {
         case OPPOSITE_BISHOPS -> blackMoveMaskKbbvK(first, second, third, fourth);
         case ROOK_LIGHT_BISHOP -> blackMoveMaskKrvKb(first, second, third, fourth);
         case ROOK_KNIGHT -> blackMoveMaskKrvKn(first, second, third, fourth);
+        case TWO_KNIGHTS -> blackMoveMaskKnnvK(first, second, third, fourth);
       };
     }
 
@@ -483,6 +492,27 @@ final class BasicFourPieceHelpmateVerifier {
       return result;
     }
 
+    private int blackMoveMaskKnnvK(int whiteKing, int whiteKnightA, int whiteKnightB, int blackKing) {
+      var result = 0;
+      for (final int[] delta : KING_DELTAS) {
+        final var target = offset(blackKing, delta);
+        if (target == -1 || target == whiteKing) {
+          continue;
+        }
+        final var capturesKnightA = target == whiteKnightA;
+        final var capturesKnightB = target == whiteKnightB;
+        final var knightAAfterMove = capturesKnightA ? -1 : whiteKnightA;
+        final var knightBAfterMove = capturesKnightB ? -1 : whiteKnightB;
+        if (!isBlackInCheck(whiteKing, knightAAfterMove, knightBAfterMove, target)) {
+          result |= HAS_LEGAL_BLACK_MOVE;
+          if (!capturesKnightA && !capturesKnightB) {
+            result |= HAS_MATERIAL_PRESERVING_BLACK_MOVE;
+          }
+        }
+      }
+      return result;
+    }
+
     int addWhitePredecessors(BitSet legalStates, BitSet winning, int[] witnessByState, byte[] distanceByState,
         IntQueue queue, int state, int predecessorDistance) {
       return switch (this) {
@@ -490,6 +520,8 @@ final class BasicFourPieceHelpmateVerifier {
             state, predecessorDistance);
         case ROOK_LIGHT_BISHOP, ROOK_KNIGHT -> addWhitePredecessorsKrvKx(legalStates, winning, witnessByState,
             distanceByState, queue, state, predecessorDistance);
+        case TWO_KNIGHTS -> addWhitePredecessorsKnnvK(legalStates, winning, witnessByState, distanceByState, queue,
+            state, predecessorDistance);
       };
     }
 
@@ -567,11 +599,52 @@ final class BasicFourPieceHelpmateVerifier {
       return result;
     }
 
+    private static int addWhitePredecessorsKnnvK(BitSet legalStates, BitSet winning, int[] witnessByState,
+        byte[] distanceByState, IntQueue queue, int state, int predecessorDistance) {
+      final var whiteKing = first(state);
+      final var whiteKnightA = second(state);
+      final var whiteKnightB = third(state);
+      final var blackKing = fourth(state);
+      var result = 0;
+      for (final int[] delta : KING_DELTAS) {
+        final var origin = offset(whiteKing, delta);
+        if (origin != -1 && origin != whiteKnightA && origin != whiteKnightB && origin != blackKing) {
+          result = Math.max(result, addPredecessor(legalStates, winning, witnessByState, distanceByState, queue, state,
+              origin, whiteKnightA, whiteKnightB, blackKing, WHITE_TO_MOVE, predecessorDistance));
+        }
+      }
+      result = Math.max(result, addKnightPredecessors(legalStates, winning, witnessByState, distanceByState, queue,
+          state, whiteKing, whiteKnightA, whiteKnightB, blackKing, true, predecessorDistance));
+      result = Math.max(result, addKnightPredecessors(legalStates, winning, witnessByState, distanceByState, queue,
+          state, whiteKing, whiteKnightA, whiteKnightB, blackKing, false, predecessorDistance));
+      return result;
+    }
+
+    private static int addKnightPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState,
+        byte[] distanceByState, IntQueue queue, int state, int whiteKing, int whiteKnightA, int whiteKnightB,
+        int blackKing, boolean moveKnightA, int predecessorDistance) {
+      final var destination = moveKnightA ? whiteKnightA : whiteKnightB;
+      final var otherKnight = moveKnightA ? whiteKnightB : whiteKnightA;
+      var result = 0;
+      for (final int[] delta : KNIGHT_DELTAS) {
+        final var origin = offset(destination, delta);
+        if (origin == -1 || origin == whiteKing || origin == otherKnight || origin == blackKing) {
+          continue;
+        }
+        final var knightA = Math.min(origin, otherKnight);
+        final var knightB = Math.max(origin, otherKnight);
+        result = Math.max(result, addPredecessor(legalStates, winning, witnessByState, distanceByState, queue, state,
+            whiteKing, knightA, knightB, blackKing, WHITE_TO_MOVE, predecessorDistance));
+      }
+      return result;
+    }
+
     int addBlackPredecessors(BitSet legalStates, BitSet winning, int[] witnessByState, byte[] distanceByState,
         IntQueue queue, int state, int predecessorDistance) {
       return switch (this) {
-        case OPPOSITE_BISHOPS -> addBlackKingPredecessors(legalStates, winning, witnessByState, distanceByState, queue,
-            state, predecessorDistance, first(state), second(state), third(state), fourth(state));
+        case OPPOSITE_BISHOPS, TWO_KNIGHTS -> addBlackKingPredecessors(legalStates, winning, witnessByState,
+            distanceByState, queue, state, predecessorDistance, first(state), second(state), third(state),
+            fourth(state));
         case ROOK_LIGHT_BISHOP -> addBlackPredecessorsKrvKb(legalStates, winning, witnessByState, distanceByState,
             queue, state, predecessorDistance);
         case ROOK_KNIGHT -> addBlackPredecessorsKrvKn(legalStates, winning, witnessByState, distanceByState, queue,
@@ -647,7 +720,10 @@ final class BasicFourPieceHelpmateVerifier {
       return result;
     }
 
-    static MoveSpecification moveBetween(int source, int target) {
+    MoveSpecification moveBetween(int source, int target) {
+      if (this == TWO_KNIGHTS) {
+        return twoKnightsMoveBetween(source, target);
+      }
       if (first(source) != first(target)) {
         return new MoveSpecification(square(first(source)), square(first(target)));
       }
@@ -663,12 +739,43 @@ final class BasicFourPieceHelpmateVerifier {
       throw new AssertionError("States are not connected by one material-preserving move: " + source + " " + target);
     }
 
+    private static MoveSpecification twoKnightsMoveBetween(int source, int target) {
+      if (first(source) != first(target)) {
+        return new MoveSpecification(square(first(source)), square(first(target)));
+      }
+      if (fourth(source) != fourth(target)) {
+        return new MoveSpecification(square(fourth(source)), square(fourth(target)));
+      }
+      final var sourceA = second(source);
+      final var sourceB = third(source);
+      final var targetA = second(target);
+      final var targetB = third(target);
+      if (sourceA == targetA && sourceB == targetB) {
+        throw new AssertionError("States are not connected by one move: " + source + " " + target);
+      }
+      if (sourceA == targetA) {
+        return new MoveSpecification(square(sourceB), square(targetB));
+      }
+      if (sourceA == targetB) {
+        return new MoveSpecification(square(sourceB), square(targetA));
+      }
+      if (sourceB == targetA) {
+        return new MoveSpecification(square(sourceA), square(targetB));
+      }
+      if (sourceB == targetB) {
+        return new MoveSpecification(square(sourceA), square(targetA));
+      }
+      throw new AssertionError("States are not connected by one material-preserving move: " + source + " " + target);
+    }
+
     boolean capturesWhiteMaterial(int state, MoveSpecification move) {
       return switch (this) {
         case OPPOSITE_BISHOPS -> havingMove(state) == BLACK_TO_MOVE
             && (move.toSquare().ordinal() == second(state) || move.toSquare().ordinal() == third(state));
         case ROOK_LIGHT_BISHOP, ROOK_KNIGHT -> havingMove(state) == BLACK_TO_MOVE
             && move.toSquare().ordinal() == second(state);
+        case TWO_KNIGHTS -> havingMove(state) == BLACK_TO_MOVE
+            && (move.toSquare().ordinal() == second(state) || move.toSquare().ordinal() == third(state));
       };
     }
 
@@ -680,6 +787,8 @@ final class BasicFourPieceHelpmateVerifier {
             0L, bit(fourth(state)), 0L, bit(third(state)));
         case ROOK_KNIGHT -> new BitboardPosition(0L, bit(second(state)), 0L, 0L, 0L, bit(first(state)), 0L, 0L,
             bit(fourth(state)), 0L, 0L, bit(third(state)));
+        case TWO_KNIGHTS -> new BitboardPosition(0L, 0L, bit(second(state)) | bit(third(state)), 0L, 0L,
+            bit(first(state)), 0L, 0L, 0L, 0L, 0L, bit(fourth(state)));
       };
     }
   }

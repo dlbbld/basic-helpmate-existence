@@ -2,7 +2,7 @@
 
 This project delivers a finite-state proof by code for basic helpmate existence in all legal positions in selected low-material chess endgames. It is supplemented by machine-checkable algorithms for determining a few positions as illegal by last move, where the theorem does not hold.
 
-The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
+The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KRvKB`, `KRvKN`, and `KNNvK`, together with their colour-reversed counterparts.
 
 ## Theorem
 
@@ -10,14 +10,14 @@ Let `M` be the side with the mating material, and let `D` be the defending side.
 
 1.  If `M` is to move, then `M` has a helpmate.
 
-2.  If `D` is to move, then `M` has a helpmate unless `D` has one or two legal moves and every legal move captures one of `M`'s pieces.
+2.  If `D` is to move, then `M` has a helpmate unless `D`'s only legal first moves are captures of one of `M`'s pieces.
 
 
 Equivalently, spelled out by colour:
 
-* White has the mating material: if White is to move, White has a helpmate; if Black is to move, White has a helpmate unless Black has one or two legal moves and every legal move captures one of White's pieces.
+* White has the mating material: if White is to move, White has a helpmate; if Black is to move, White has a helpmate unless Black's only legal first moves are captures of one of White's pieces.
 
-* Black has the mating material: if Black is to move, Black has a helpmate; if White is to move, Black has a helpmate unless White has one or two legal moves and every legal move captures one of Black's pieces.
+* Black has the mating material: if Black is to move, Black has a helpmate; if White is to move, Black has a helpmate unless White's only legal first moves are captures of one of Black's pieces.
 
 ### Ongoing legal positions
 
@@ -25,9 +25,22 @@ The theorem applies only to ongoing legal positions. If the position is already 
 
 ### Finite-state proof
 
-The computation is performed with White as `M` for the six material classes listed above. The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence.
+The computation is performed with White as `M` for the seven material classes listed above. The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence.
 
 The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop case is obtained by board symmetry, so the light-square computation is sufficient.
+
+### Supplementary two-major check
+
+The main theorem is about basic material classes, so `KRRvK` and `KQQvK` are not included in it. The tests nevertheless include the following supplementary check: in every potentially legal exact `KRRvK` or `KQQvK` position that is not already checkmate or stalemate, White has a helpmate, no matter which side is to move.
+
+This is a separate finite-state computation rather than an extension of the exception pattern above. In these two-major classes the defending king can have a forced first capture of one rook or one queen, and White can still have a helpmate because the remaining `KRvK` or `KQvK` material is enough. Although this may look obvious geometrically, checking it prevents the same kind of side-to-move, stalemate, and forced-capture oversights that motivated the main theorem.
+
+The test `TestTwoMajorPieceWinnabilityAnalysis` checks a combined state space: exact `KRRvK` together with auxiliary `KRvK`, and exact `KQQvK` together with auxiliary `KQvK`. A black move is allowed to capture one of two major pieces, moving into the auxiliary one-major layer; a move that captures the last major piece is not used as a mate-reaching continuation.
+
+| Material class | Potentially legal positions | Checkmates | Stalemates | Ongoing positions | Forced first capture (total 1 move) | Forced first capture (total 2 moves) | Counterexamples | Maximum helpmate plies |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `KRRvK` | 10,992,884 | 72,392 | 19,580 | 10,900,912 | 80,456 | 9,952 | 0 | 14 |
+| `KQQvK` | 9,658,852 | 251,880 | 141,176 | 9,265,796 | 242,216 | 16,448 | 0 | 14 |
 
 ## Motivation and difficulty
 
@@ -161,7 +174,7 @@ mvn test
 
 ```
 
-On the current development machine, the full test suite took roughly 2 minutes 15 seconds in the latest clean run.
+On the current development machine, the full test suite took roughly 2 minutes 25 seconds in the latest clean run.
 
 ## Current Position Counts for White to move
 
@@ -177,6 +190,7 @@ On the current development machine, the full test suite took roughly 2 minutes 1
 | `KBNvK`, light bishop | 5,437,752 | 0 | 0 | 60 illegal | 15 |
 | `KRvKB(light bishop)` | 5,390,364 | 0 | 0 | 0 | 13 |
 | `KRvKN` | 10,780,728 | 8 | 0 | 0 | 13 |
+| `KNNvK` | 5,749,652 | 0 | 0 | 0 | 15 |
 
 The nonzero white-to-move counterexample rows are the potentially legal positions where the theorem does not hold. The representative cases are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. 
 
@@ -190,14 +204,15 @@ The nonzero white-to-move counterexample rows are the potentially legal position
 | `KBNvK`, light bishop | 1,359,578 | 0 | 0 | 15 illegal | 15 |
 | `KRvKB(light bishop)` | 1,347,906 | 0 | 0 | 0 | 13 |
 | `KRvKN` | 1,347,906 | 1 | 0 | 0 | 13 |
+| `KNNvK` | 719,130 | 0 | 0 | 0 | 15 |
 
 ## Current Position Counts for Black to move
 
-The forced first capture exception is split by the number of legal moves available to the defending side. No exception has more than two legal defending moves, so a position with three or more legal defending moves is immediately outside the exception. 
+The forced first capture exception is split by the total number of legal moves available to the defending side. In every such exception, the defending side has at most two legal moves; a position with three or more legal defending moves is immediately outside the exception.
 
 ### All potentially legal positions
 
-| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture: one move | Forced first capture: two moves | Counterexamples | Maximum helpmate plies |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture (total 1 move) | Forced first capture (total 2 moves) | Counterexamples | Maximum helpmate plies |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `KRvK` | 223,944 | 216 | 68 | 412 | 0 | 0 | 14 |
 | `KQvK` | 223,944 | 364 | 872 | 2,420 | 0 | 0 | 14 |
@@ -205,10 +220,11 @@ The forced first capture exception is split by the number of legal moves availab
 | `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,042 | 432 | 4, 1 representative, illegal | 16 |
 | `KRvKB(light bishop)` | 5,916,232 | 3,264 | 48 | 3,152 | 588 | 0 | 14 |
 | `KRvKN` | 12,535,256 | 9,328 | 48 | 6,848 | 320 | 0 | 14 |
+| `KNNvK` | 6,830,292 | 120 | 3,864 | 1,708 | 124 | 0 | 16 |
 
 ### Potentially legal positions reduced to representative cases
 
-| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture: one move | Forced first capture: two moves | Counterexamples | Maximum helpmate plies |
+| Material class | Potentially legal positions | Checkmates | Stalemates | Forced first capture (total 1 move) | Forced first capture (total 2 moves) | Counterexamples | Maximum helpmate plies |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `KRvK` | 28,056 | 27 | 9 | 54 | 0 | 0 | 14 |
 | `KQvK` | 28,056 | 46 | 109 | 305 | 0 | 0 | 14 |
@@ -216,8 +232,28 @@ The forced first capture exception is split by the number of legal moves availab
 | `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,013 | 108 | 1 illegal | 16 |
 | `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 788 | 147 | 0 | 14 |
 | `KRvKN` | 1,567,222 | 1,166 | 6 | 856 | 40 | 0 | 14 |
+| `KNNvK` | 854,238 | 15 | 484 | 216 | 16 | 0 | 16 |
 
 For `KBBvK`, the total number of potentially legal representative positions uses the bishop-colour-preserving symmetries of the theorem class. The checkmate, stalemate, and forced-capture sub-counts use the full board-symmetry representative count, because those event sets are invariant under the full board-symmetry group.
+
+## Forced first capture
+
+The following table gives the first representative example encountered by the analysis for each material class with a forced first capture. If a material class also has a forced first capture where the defending side has two legal moves, the first such representative is included as well.
+
+| Example | Material class | Side to move | Representative position | Total legal moves |
+| --- | --- | --- | --- | ---: |
+| 1 | `KRvK` | Black | [![8/8/8/8/8/8/3R4/K1k5 b - - 0 1](assets/boards/forced-first-capture-1.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/3R4/K1k5_b_-_-_0_1)<br>`8/8/8/8/8/8/3R4/K1k5 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/3R4/K1k5_b_-_-_0_1) | 1 |
+| 2 | `KQvK` | Black | [![8/8/8/8/8/8/8/K1kQ4 b - - 0 1](assets/boards/forced-first-capture-2.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/K1kQ4_b_-_-_0_1)<br>`8/8/8/8/8/8/8/K1kQ4 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/K1kQ4_b_-_-_0_1) | 1 |
+| 3 | `KBBvK`, opposite bishops | Black | [![8/8/8/8/8/8/8/K1kBB3 b - - 0 1](assets/boards/forced-first-capture-3.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/K1kBB3_b_-_-_0_1)<br>`8/8/8/8/8/8/8/K1kBB3 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/K1kBB3_b_-_-_0_1) | 1 |
+| 4 | `KBBvK`, opposite bishops | Black | [![8/8/8/8/8/8/3B4/K1kB4 b - - 0 1](assets/boards/forced-first-capture-4.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/3B4/K1kB4_b_-_-_0_1)<br>`8/8/8/8/8/8/3B4/K1kB4 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/3B4/K1kB4_b_-_-_0_1) | 2 |
+| 5 | `KBNvK`, light bishop | Black | [![8/8/8/8/8/8/8/KNkB4 b - - 0 1](assets/boards/forced-first-capture-5.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/KNkB4_b_-_-_0_1)<br>`8/8/8/8/8/8/8/KNkB4 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/8/KNkB4_b_-_-_0_1) | 1 |
+| 6 | `KBNvK`, light bishop | Black | [![8/8/8/8/8/8/3N4/K1kB4 b - - 0 1](assets/boards/forced-first-capture-6.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/3N4/K1kB4_b_-_-_0_1)<br>`8/8/8/8/8/8/3N4/K1kB4 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/3N4/K1kB4_b_-_-_0_1) | 2 |
+| 7 | `KRvKB(light bishop)` | Black | [![8/8/8/8/8/1b6/k7/R1K5 b - - 0 1](assets/boards/forced-first-capture-7.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/1b6/k7/R1K5_b_-_-_0_1)<br>`8/8/8/8/8/1b6/k7/R1K5 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/1b6/k7/R1K5_b_-_-_0_1) | 1 |
+| 8 | `KRvKB(light bishop)` | Black | [![8/8/8/8/8/8/2b5/K1kR4 b - - 0 1](assets/boards/forced-first-capture-8.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/2b5/K1kR4_b_-_-_0_1)<br>`8/8/8/8/8/8/2b5/K1kR4 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/2b5/K1kR4_b_-_-_0_1) | 2 |
+| 9 | `KRvKN` | Black | [![8/8/8/8/8/8/7n/K5Rk b - - 0 1](assets/boards/forced-first-capture-9.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/7n/K5Rk_b_-_-_0_1)<br>`8/8/8/8/8/8/7n/K5Rk b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/7n/K5Rk_b_-_-_0_1) | 1 |
+| 10 | `KRvKN` | Black | [![8/8/8/8/8/2n5/R7/k1K5 b - - 0 1](assets/boards/forced-first-capture-10.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/2n5/R7/k1K5_b_-_-_0_1)<br>`8/8/8/8/8/2n5/R7/k1K5 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/2n5/R7/k1K5_b_-_-_0_1) | 2 |
+| 11 | `KNNvK` | Black | [![8/8/8/8/8/4N3/3N4/K1k5 b - - 0 1](assets/boards/forced-first-capture-11.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/4N3/3N4/K1k5_b_-_-_0_1)<br>`8/8/8/8/8/4N3/3N4/K1k5 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/4N3/3N4/K1k5_b_-_-_0_1) | 1 |
+| 12 | `KNNvK` | Black | [![8/8/8/8/8/N7/k7/N1K5 b - - 0 1](assets/boards/forced-first-capture-12.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/N7/k7/N1K5_b_-_-_0_1)<br>`8/8/8/8/8/N7/k7/N1K5 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/N7/k7/N1K5_b_-_-_0_1) | 2 |
 
 ## External Cross-Checks
 
@@ -238,6 +274,7 @@ The table below gives the corresponding unique representative counts. The unique
 | `KBNvK(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KBNvK` after bishop-colour symmetry | 5,437,752 | 6,830,292 | 12,268,044 | 1,359,578 | 1,707,888 | 3,067,466 | 3,067,466 | matches |
 | `KRvKB(light bishop)` | light-bishop theorem class, equivalent to Syzygy `KRvKB` after bishop-colour symmetry | 5,390,364 | 5,916,232 | 11,306,596 | 1,347,906 | 1,479,198 | 2,827,104 | 2,827,104 | matches |
 | `KRvKN` | theorem class | 10,780,728 | 12,535,256 | 23,315,984 | 1,347,906 | 1,567,222 | 2,915,128 | 2,915,128 | matches |
+| `KNNvK` | theorem class | 5,749,652 | 6,830,292 | 12,579,944 | 719,130 | 854,238 | 1,573,368 | 1,573,368 | matches |
 | `KBBvK`, opposite bishops | converted to the same generic two-bishop-slot convention as Syzygy | 5,008,256 | 6,938,688 | 11,946,944 | 626,032 | 867,336 | 1,493,368 | n/a | generated subset |
 | `KBBvK`, same-colour bishops | generated in the same generic two-bishop-slot convention as Syzygy | 5,155,800 | 6,721,896 | 11,877,696 | 644,510 | 840,552 | 1,485,062 | n/a | generated subset |
 | `KBBvK`, sum | sum of the two preceding `KBBvK` rows | 10,164,056 | 13,660,584 | 23,824,640 | 1,270,542 | 1,707,888 | 2,978,430 | 2,978,430 | matches |
@@ -266,10 +303,11 @@ The script generates one representative per relevant board-symmetry class and pr
 | `KBNvK(light bishop)` | 3,067,466 |
 | `KRvKB(light bishop)` | 2,827,104 |
 | `KRvKN` | 2,915,128 |
+| `KNNvK` | 1,573,368 |
 | `KBBvK(opposite bishops)` | 1,493,368 |
 | `KBBvK`, all ordered bishop slots | 2,978,430 |
 
-Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete. The six theorem classes are probed directly; the expanded all-bishop `KBBvK` row is an additional check for the full Syzygy material table.
+Every generated representative probed successfully. Together with the matching Syzygy/NULP unique counts, this gives a pointwise cross-check that the generated potentially legal positions are sound and complete. The seven theorem classes are probed directly; the expanded all-bishop `KBBvK` row is an additional check for the full Syzygy material table.
 
 ## Dependency
 
