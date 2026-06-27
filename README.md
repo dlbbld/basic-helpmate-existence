@@ -29,6 +29,19 @@ The computation is performed with White as `M` for the seven material classes li
 
 The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop case is obtained by board symmetry, so the light-square computation is sufficient.
 
+### Supplementary two-major check
+
+The main theorem is about basic material classes, so `KRRvK` and `KQQvK` are not included in it. The tests nevertheless include the following supplementary check: in every potentially legal exact `KRRvK` or `KQQvK` position that is not already checkmate or stalemate, White has a helpmate, no matter which side is to move.
+
+This is a separate finite-state computation rather than an extension of the exception pattern above. In these two-major classes the defending king can have a forced first capture of one rook or one queen, and White can still have a helpmate because the remaining `KRvK` or `KQvK` material is enough. Although this may look obvious geometrically, checking it prevents the same kind of side-to-move, stalemate, and forced-capture oversights that motivated the main theorem.
+
+The test `TestTwoMajorPieceWinnabilityAnalysis` checks a combined state space: exact `KRRvK` together with auxiliary `KRvK`, and exact `KQQvK` together with auxiliary `KQvK`. A black move is allowed to capture one of two major pieces, moving into the auxiliary one-major layer; a move that captures the last major piece is not used as a mate-reaching continuation.
+
+| Material class | Potentially legal positions | Checkmates | Stalemates | Ongoing positions | Forced first capture (total 1 move) | Forced first capture (total 2 moves) | Counterexamples | Maximum helpmate plies |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `KRRvK` | 10,992,884 | 72,392 | 19,580 | 10,900,912 | 80,456 | 9,952 | 0 | 14 |
+| `KQQvK` | 9,658,852 | 251,880 | 141,176 | 9,265,796 | 242,216 | 16,448 | 0 | 14 |
+
 ## Motivation and difficulty
 
 In chess, the FIDE rule on flag fall asks whether the opponent still has a helpmate; only then is the game a loss for the flagging player. This motivates checking whether the side with mating material has any possible cooperative continuation to checkmate, without having to construct such a continuation during adjudication.
