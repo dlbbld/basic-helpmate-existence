@@ -8,6 +8,7 @@ public class GenerateBasicFourPieceHelpmateVerification {
     printKbbvK();
     printKrvKb();
     printKrvKn();
+    printKnnvK();
   }
 
   private static void printKbbvK() {
@@ -51,6 +52,22 @@ public class GenerateBasicFourPieceHelpmateVerification {
 
     print("KRvKN", analysis.legalStateCount(), analysis.blackToMoveStateCount(), analysis.blackCheckmateCount(),
         analysis.ongoingBlackToMoveStateCount(), analysis.winningStateCount(), analysis.forcedRookCaptureStateCount(),
+        analysis.stalemateStateCount(), analysis.counterexampleStateCount(), verification, analysisElapsedNanos,
+        verificationElapsedNanos);
+  }
+
+  private static void printKnnvK() {
+    final var analysisStart = System.nanoTime();
+    final var analysis = BasicTwoKnightsHelpmateAnalysis.analyze();
+    final var analysisElapsedNanos = System.nanoTime() - analysisStart;
+
+    final var verificationStart = System.nanoTime();
+    final var verification = BasicFourPieceHelpmateVerifier.verifyKnnvK();
+    final var verificationElapsedNanos = System.nanoTime() - verificationStart;
+
+    print("KNNvK", analysis.legalStateCount(), analysis.blackToMoveStateCount(), analysis.blackCheckmateCount(),
+        analysis.ongoingBlackToMoveStateCount(), analysis.winningStateCount(),
+        analysis.forcedPieceCaptureOneMoveStateCount() + analysis.forcedPieceCaptureTwoMoveStateCount(),
         analysis.stalemateStateCount(), analysis.counterexampleStateCount(), verification, analysisElapsedNanos,
         verificationElapsedNanos);
   }

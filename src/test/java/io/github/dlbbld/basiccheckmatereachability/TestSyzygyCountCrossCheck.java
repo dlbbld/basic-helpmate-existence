@@ -37,6 +37,12 @@ class TestSyzygyCountCrossCheck {
 
   @SuppressWarnings("static-method")
   @Test
+  void twoKnightsCountsMatchSyzygyUniquePositions() {
+    assertCount(countTwoKnights(), 5749652, 6830292, 719130, 854238, 1573368);
+  }
+
+  @SuppressWarnings("static-method")
+  @Test
   void oppositeBishopSubsetAndExpandedBishopTableAreCountedSeparately() {
     assertCount(countOppositeBishops(), 2504128, 3469344, 626032, 867336, 1493368);
     assertCount(countOppositeBishopsOrderedSlots(), 5008256, 6938688, 626032, 867336, 1493368);
@@ -169,6 +175,36 @@ class TestSyzygyCountCrossCheck {
             if (!whiteInCheck) {
               counter.addBlackToMove(new int[] {whiteKing, whiteRook, blackKing, blackKnight},
                   FULL_BOARD_SYMMETRIES);
+            }
+          }
+        }
+      }
+    }
+    return counter.count();
+  }
+
+  private static Count countTwoKnights() {
+    final var counter = new IdenticalKnightCounter();
+    for (var whiteKing = 0; whiteKing < 64; whiteKing++) {
+      for (var whiteKnightA = 0; whiteKnightA < 64; whiteKnightA++) {
+        if (whiteKnightA == whiteKing) {
+          continue;
+        }
+        for (var whiteKnightB = whiteKnightA + 1; whiteKnightB < 64; whiteKnightB++) {
+          if (whiteKnightB == whiteKing) {
+            continue;
+          }
+          for (var blackKing = 0; blackKing < 64; blackKing++) {
+            if (blackKing == whiteKing || blackKing == whiteKnightA || blackKing == whiteKnightB) {
+              continue;
+            }
+            final var blackInCheck = kingsTouch(whiteKing, blackKing) || knightAttacks(whiteKnightA, blackKing)
+                || knightAttacks(whiteKnightB, blackKing);
+            if (!blackInCheck) {
+              counter.addWhiteToMove(whiteKing, whiteKnightA, whiteKnightB, blackKing);
+            }
+            if (!kingsTouch(whiteKing, blackKing)) {
+              counter.addBlackToMove(whiteKing, whiteKnightA, whiteKnightB, blackKing);
             }
           }
         }
@@ -405,6 +441,51 @@ class TestSyzygyCountCrossCheck {
       final var canonical = canonical(pieces, isWhiteToMove, transformIndexes);
       side.set(canonical);
       all.set(canonical);
+    }
+  }
+
+  private static final class IdenticalKnightCounter {
+    private final BitSet whiteToMove = new BitSet();
+    private final BitSet blackToMove = new BitSet();
+    private final BitSet all = new BitSet();
+    private int rawWhiteToMove;
+    private int rawBlackToMove;
+
+    void addWhiteToMove(int whiteKing, int whiteKnightA, int whiteKnightB, int blackKing) {
+      rawWhiteToMove++;
+      add(whiteToMove, whiteKing, whiteKnightA, whiteKnightB, blackKing, true);
+    }
+
+    void addBlackToMove(int whiteKing, int whiteKnightA, int whiteKnightB, int blackKing) {
+      rawBlackToMove++;
+      add(blackToMove, whiteKing, whiteKnightA, whiteKnightB, blackKing, false);
+    }
+
+    Count count() {
+      return new Count(rawWhiteToMove, rawBlackToMove, whiteToMove.cardinality(), blackToMove.cardinality(),
+          all.cardinality());
+    }
+
+    private void add(BitSet side, int whiteKing, int whiteKnightA, int whiteKnightB, int blackKing,
+        boolean isWhiteToMove) {
+      final var canonical = canonicalTwoKnights(whiteKing, whiteKnightA, whiteKnightB, blackKing, isWhiteToMove);
+      side.set(canonical);
+      all.set(canonical);
+    }
+
+    private static int canonicalTwoKnights(int whiteKing, int whiteKnightA, int whiteKnightB, int blackKing,
+        boolean whiteToMove) {
+      var result = Integer.MAX_VALUE;
+      for (final var transformIndex : FULL_BOARD_SYMMETRIES) {
+        final var transformedWhiteKing = transform(whiteKing, transformIndex);
+        final var transformedKnightA = transform(whiteKnightA, transformIndex);
+        final var transformedKnightB = transform(whiteKnightB, transformIndex);
+        final var transformedBlackKing = transform(blackKing, transformIndex);
+        result = Math.min(result, encode(new int[] {transformedWhiteKing,
+            Math.min(transformedKnightA, transformedKnightB), Math.max(transformedKnightA, transformedKnightB),
+            transformedBlackKing}, whiteToMove));
+      }
+      return result;
     }
   }
 

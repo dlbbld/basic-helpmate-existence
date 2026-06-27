@@ -93,6 +93,54 @@ DIAGRAMS = [
         "kbnvk-light-btm-1.svg",
         "8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1",
     ),
+    (
+        "forced-first-capture-1.svg",
+        "8/8/8/8/8/8/3R4/K1k5 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-2.svg",
+        "8/8/8/8/8/8/8/K1kQ4 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-3.svg",
+        "8/8/8/8/8/8/8/K1kBB3 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-4.svg",
+        "8/8/8/8/8/8/3B4/K1kB4 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-5.svg",
+        "8/8/8/8/8/8/8/KNkB4 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-6.svg",
+        "8/8/8/8/8/8/3N4/K1kB4 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-7.svg",
+        "8/8/8/8/8/1b6/k7/R1K5 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-8.svg",
+        "8/8/8/8/8/8/2b5/K1kR4 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-9.svg",
+        "8/8/8/8/8/8/7n/K5Rk b - - 0 1",
+    ),
+    (
+        "forced-first-capture-10.svg",
+        "8/8/8/8/8/2n5/R7/k1K5 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-11.svg",
+        "8/8/8/8/8/4N3/3N4/K1k5 b - - 0 1",
+    ),
+    (
+        "forced-first-capture-12.svg",
+        "8/8/8/8/8/N7/k7/N1K5 b - - 0 1",
+    ),
 ]
 
 

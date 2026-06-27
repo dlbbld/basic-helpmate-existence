@@ -95,7 +95,10 @@ def verify_material(tablebase: chess.syzygy.Tablebase, material: Material, progr
     seen: set[tuple[tuple[PieceOnSquare, ...], bool]] = set()
     probed = 0
     for pieces, white_to_move in material.generator():
-        representative = canonical(pieces, white_to_move, material.symmetries)
+        if material.name == "KNNvK":
+            representative = canonical_knnvk(pieces, white_to_move, material.symmetries)
+        else:
+            representative = canonical(pieces, white_to_move, material.symmetries)
         if representative in seen:
             continue
         seen.add(representative)
@@ -132,6 +135,7 @@ def materials() -> list[Material]:
             BISHOP_COLOUR_PRESERVING_SYMMETRIES,
         ),
         Material("KRvKN", "KRvKN", 2_915_128, generate_krvkn, FULL_BOARD_SYMMETRIES),
+        Material("KNNvK", "KNNvK", 1_573_368, generate_knnvk, FULL_BOARD_SYMMETRIES),
         Material(
             "KBBvK(opposite bishops)",
             "KBBvK",
@@ -261,6 +265,34 @@ def generate_krvkn() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
                         yield pieces, False
 
 
+def generate_knnvk() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
+    for white_king in range(64):
+        for white_knight1 in range(64):
+            if white_knight1 == white_king:
+                continue
+            for white_knight2 in range(white_knight1 + 1, 64):
+                if white_knight2 == white_king:
+                    continue
+                for black_king in range(64):
+                    if black_king in (white_king, white_knight1, white_knight2):
+                        continue
+                    black_in_check = (
+                        kings_touch(white_king, black_king)
+                        or knight_attacks(white_knight1, black_king)
+                        or knight_attacks(white_knight2, black_king)
+                    )
+                    pieces = (
+                        PieceOnSquare("K", white_king),
+                        PieceOnSquare("N", white_knight1),
+                        PieceOnSquare("N", white_knight2),
+                        PieceOnSquare("k", black_king),
+                    )
+                    if not black_in_check:
+                        yield pieces, True
+                    if not kings_touch(white_king, black_king):
+                        yield pieces, False
+
+
 def generate_kbbvk_opposite() -> Iterator[tuple[tuple[PieceOnSquare, ...], bool]]:
     light_squares = [square for square in range(64) if is_light_square(square)]
     dark_squares = [square for square in range(64) if not is_light_square(square)]
@@ -338,6 +370,32 @@ def canonical(
         (tuple(PieceOnSquare(piece.symbol, transform(piece.square, index)) for piece in pieces), white_to_move)
         for index in transform_indexes
     )
+
+
+def canonical_knnvk(
+    pieces: tuple[PieceOnSquare, ...], white_to_move: bool, transform_indexes: Sequence[int]
+) -> tuple[tuple[PieceOnSquare, ...], bool]:
+    white_king, white_knight1, white_knight2, black_king = pieces
+    candidates = []
+    for index in transform_indexes:
+        transformed_knights = sorted(
+            (
+                PieceOnSquare("N", transform(white_knight1.square, index)),
+                PieceOnSquare("N", transform(white_knight2.square, index)),
+            )
+        )
+        candidates.append(
+            (
+                (
+                    PieceOnSquare("K", transform(white_king.square, index)),
+                    transformed_knights[0],
+                    transformed_knights[1],
+                    PieceOnSquare("k", transform(black_king.square, index)),
+                ),
+                white_to_move,
+            )
+        )
+    return min(candidates)
 
 
 def transform(square: int, transform_index: int) -> int:

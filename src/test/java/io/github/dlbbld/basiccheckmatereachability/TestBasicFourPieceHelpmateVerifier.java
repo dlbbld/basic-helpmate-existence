@@ -3,6 +3,7 @@ package io.github.dlbbld.basiccheckmatereachability;
 import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.OPPOSITE_BISHOPS;
 import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.ROOK_KNIGHT;
 import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.ROOK_LIGHT_BISHOP;
+import static io.github.dlbbld.basiccheckmatereachability.BasicFourPieceHelpmateVerifier.Material.TWO_KNIGHTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -58,5 +59,22 @@ class TestBasicFourPieceHelpmateVerifier {
     assertEquals(12518712, result.verifiedTheoremRootCount());
     assertEquals(13, result.maximumWhiteToMoveDistance());
     assertEquals(14, result.maximumDistance());
+  }
+
+  @SuppressWarnings("static-method")
+  @Test
+  void knnvKCertificateVerifiesTheoremRoots() {
+    final var result = BasicFourPieceHelpmateVerifier.verifyKnnvK();
+
+    assertEquals(TWO_KNIGHTS, result.material());
+    assertEquals(12579944, result.legalStateCount());
+    assertEquals(120, result.terminalCheckmateCount());
+    assertEquals(12574248, result.winningStateCount());
+    assertEquals(12574128, result.witnessStateCount());
+    assertEquals(120, result.verifiedTerminalCount());
+    assertEquals(12574128, result.verifiedWitnessCount());
+    assertEquals(6824476, result.verifiedTheoremRootCount());
+    assertEquals(15, result.maximumWhiteToMoveDistance());
+    assertEquals(16, result.maximumDistance());
   }
 }
