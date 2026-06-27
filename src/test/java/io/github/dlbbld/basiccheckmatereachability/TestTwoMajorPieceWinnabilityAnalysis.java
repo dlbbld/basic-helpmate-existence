@@ -25,6 +25,13 @@ class TestTwoMajorPieceWinnabilityAnalysis {
     assertEquals(90408, result.twoMajorForcedFirstCaptureStateCount());
     assertEquals(80456, result.twoMajorForcedFirstCaptureOneMoveStateCount());
     assertEquals(9952, result.twoMajorForcedFirstCaptureTwoMoveStateCount());
+    assertEquals(1374940, result.twoMajorRepresentativeCount());
+    assertEquals(9052, result.twoMajorCheckmateRepresentativeCount());
+    assertEquals(2468, result.twoMajorStalemateRepresentativeCount());
+    assertEquals(1363420, result.twoMajorOngoingRepresentativeCount());
+    assertEquals(0, result.twoMajorUnwinnableOngoingRepresentativeCount());
+    assertEquals(10072, result.twoMajorForcedFirstCaptureOneMoveRepresentativeCount());
+    assertEquals(1262, result.twoMajorForcedFirstCaptureTwoMoveRepresentativeCount());
     assertEquals(11371936, result.winningStateCount());
     assertEquals(14, result.maximumDistance());
   }
@@ -46,6 +53,13 @@ class TestTwoMajorPieceWinnabilityAnalysis {
     assertEquals(258664, result.twoMajorForcedFirstCaptureStateCount());
     assertEquals(242216, result.twoMajorForcedFirstCaptureOneMoveStateCount());
     assertEquals(16448, result.twoMajorForcedFirstCaptureTwoMoveStateCount());
+    assertEquals(1208031, result.twoMajorRepresentativeCount());
+    assertEquals(31523, result.twoMajorCheckmateRepresentativeCount());
+    assertEquals(17672, result.twoMajorStalemateRepresentativeCount());
+    assertEquals(1158836, result.twoMajorOngoingRepresentativeCount());
+    assertEquals(0, result.twoMajorUnwinnableOngoingRepresentativeCount());
+    assertEquals(30282, result.twoMajorForcedFirstCaptureOneMoveRepresentativeCount());
+    assertEquals(2056, result.twoMajorForcedFirstCaptureTwoMoveRepresentativeCount());
     assertEquals(9882836, result.winningStateCount());
     assertEquals(14, result.maximumDistance());
   }
