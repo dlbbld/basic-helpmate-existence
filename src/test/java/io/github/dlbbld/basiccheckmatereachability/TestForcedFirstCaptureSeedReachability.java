@@ -3,6 +3,9 @@ package io.github.dlbbld.basiccheckmatereachability;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -11,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import io.github.dlbbld.ashlarchess.bitboard.BitboardPosition;
@@ -22,23 +24,23 @@ import io.github.dlbbld.ashlarchess.fen.StrictFenParser;
 class TestForcedFirstCaptureSeedReachability {
 
   private static final List<SeedCase> SEED_CASES = List.of(
-      new SeedCase(Material.KRVK, "4k3/8/8/8/8/8/8/4K2R w - - 0 1", "", List.of(
+      new SeedCase(Material.KRVK, "4k3/8/8/8/8/8/8/R3K3 w - - 0 1", "KRvK.pgn", List.of(
           "8/8/8/8/8/8/3R4/K1k5 b - - 0 1")),
-      new SeedCase(Material.KQVK, "4k3/8/8/8/8/8/8/3QK3 w - - 0 1", "", List.of(
+      new SeedCase(Material.KQVK, "4k3/8/8/8/8/8/8/3QK3 w - - 0 1", "KQvK.pgn", List.of(
           "8/8/8/8/8/8/8/K1kQ4 b - - 0 1")),
-      new SeedCase(Material.KBBVK, "4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1", "", List.of(
+      new SeedCase(Material.KBBVK, "4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1", "KBBvK.pgn", List.of(
           "8/8/8/8/8/8/8/K1kBB3 b - - 0 1",
           "8/8/8/8/8/8/3B4/K1kB4 b - - 0 1")),
-      new SeedCase(Material.KBNVK, "4k3/8/8/8/8/8/8/1N2KB2 w - - 0 1", "", List.of(
+      new SeedCase(Material.KBNVK, "4k3/8/8/8/8/8/8/1N2KB2 w - - 0 1", "KBNvK.pgn", List.of(
           "8/8/8/8/8/8/8/KNkB4 b - - 0 1",
           "8/8/8/8/8/8/3N4/K1kB4 b - - 0 1")),
-      new SeedCase(Material.KRVKB, "2b1k3/8/8/8/8/8/8/4K2R w - - 0 1", "", List.of(
+      new SeedCase(Material.KRVKB, "2b1k3/8/8/8/8/8/8/R3K3 w - - 0 1", "KRvKB.pgn", List.of(
           "8/8/8/8/8/1b6/k7/R1K5 b - - 0 1",
           "8/8/8/8/8/8/2b5/K1kR4 b - - 0 1")),
-      new SeedCase(Material.KRVKN, "1n2k3/8/8/8/8/8/8/4K2R w - - 0 1", "", List.of(
+      new SeedCase(Material.KRVKN, "1n2k3/8/8/8/8/8/8/R3K3 w - - 0 1", "KRvKN.pgn", List.of(
           "8/8/8/8/8/8/7n/K5Rk b - - 0 1",
           "8/8/8/8/8/2n5/R7/k1K5 b - - 0 1")),
-      new SeedCase(Material.KNNVK, "4k3/8/8/8/8/8/8/1N2K1N1 w - - 0 1", "", List.of(
+      new SeedCase(Material.KNNVK, "4k3/8/8/8/8/8/8/1N2K1N1 w - - 0 1", "KNNvK.pgn", List.of(
           "8/8/8/8/8/4N3/3N4/K1k5 b - - 0 1",
           "8/8/8/8/8/N7/k7/N1K5 b - - 0 1")));
 
@@ -55,26 +57,27 @@ class TestForcedFirstCaptureSeedReachability {
   @Test
   void seedProofGamesReachOriginalSquareSeeds() {
     for (final SeedCase seedCase : SEED_CASES) {
-      Assumptions.assumeTrue(SEED_CASES.stream().anyMatch(seed -> !seed.proofGame().isBlank()),
-          "Seed proof games pending");
-      if (seedCase.proofGame().isBlank()) {
-        continue;
-      }
+      final var seed = StrictFenParser.parse(seedCase.seedFen());
       final var board = new Board();
-      for (final String token : proofGameTokens(seedCase.proofGame())) {
+      for (final String token : proofGameTokens(proofGame(seedCase.proofGameResource()))) {
         board.moveLenient(token);
       }
-      assertEquals(seedCase.material().placementCode(seedCase.seedFen()),
-          seedCase.material().placementCode(board.getBitboardPosition()),
+      assertEquals(seed.sideToMove(), board.getSideToMove(),
+          () -> seedCase.material() + " proof game does not reach seed side to move");
+      assertEquals(seed.bitboardPosition(), board.getBitboardPosition(),
           () -> seedCase.material() + " proof game does not reach seed placement");
     }
   }
 
   private static List<String> proofGameTokens(String proofGame) {
     final List<String> result = new ArrayList<>();
-    for (final String rawToken : proofGame.split("\\s+")) {
-      final var token = rawToken.strip();
-      if (token.isEmpty() || token.matches("\\d+\\.+") || token.matches("\\d+\\.\\.\\.")) {
+    final var moveText = proofGame.replaceAll("(?m)^\\[[^\\r\\n]*]\\s*", " ").replaceAll("\\([^)]*\\)", " ")
+        .replaceAll("\\{[^}]*}", " ").replaceAll(";[^\\r\\n]*", " ");
+    for (final String rawToken : moveText.split("\\s+")) {
+      var token = rawToken.strip();
+      token = token.replaceFirst("^\\d+\\.\\.\\.", "");
+      token = token.replaceFirst("^\\d+\\.", "");
+      if (token.isEmpty() || token.matches("\\$\\d+")) {
         continue;
       }
       if ("1-0".equals(token) || "0-1".equals(token) || "1/2-1/2".equals(token) || "*".equals(token)) {
@@ -83,6 +86,19 @@ class TestForcedFirstCaptureSeedReachability {
       result.add(token);
     }
     return result;
+  }
+
+  private static String proofGame(String resourceName) {
+    final var resourcePath = "proof-games/" + resourceName;
+    try (var inputStream = TestForcedFirstCaptureSeedReachability.class.getClassLoader()
+        .getResourceAsStream(resourcePath)) {
+      if (inputStream == null) {
+        throw new AssertionError("Missing proof game resource: " + resourcePath);
+      }
+      return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private enum Material {
@@ -201,8 +217,7 @@ class TestForcedFirstCaptureSeedReachability {
       final var seed = StrictFenParser.parse(seedFen);
       final var queue = new IntQueue();
       final BitSet seen = new BitSet();
-      addSeed(queue, seen, encode(seed.bitboardPosition(), Side.WHITE));
-      addSeed(queue, seen, encode(seed.bitboardPosition(), Side.BLACK));
+      addSeed(queue, seen, encode(seed.bitboardPosition(), seed.sideToMove()));
 
       while (!queue.isEmpty() && targets.cardinality() > 0) {
         final var state = queue.remove();
@@ -289,7 +304,7 @@ class TestForcedFirstCaptureSeedReachability {
     }
   }
 
-  private record SeedCase(Material material, String seedFen, String proofGame, List<String> targetFens) {
+  private record SeedCase(Material material, String seedFen, String proofGameResource, List<String> targetFens) {
   }
 
   private static final class IntQueue {
