@@ -1,12 +1,16 @@
 # Basic Helpmate Existence
 
-This project delivers a finite-state proof by code for basic helpmate existence in all legal positions in selected low-material chess endgames. It is supplemented by machine-checkable algorithms for determining a few positions as illegal by last move, where the theorem does not hold.
+Current release: [2.0.0 — KBNvK Theorem Correction](CHANGELOG.md#200--kbnvk-theorem-correction--2026-10-06).
+
+This project delivers a finite-state proof by code for basic helpmate existence in selected low-material chess endgames, with explicit forced-capture and `KBNvK` promotion-trap exceptions. It is supplemented by sufficient, machine-checkable last-move illegality certificates for the remaining positions where the conclusion does not hold.
 
 The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KNNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
 
+Version 2.0 changes the theorem's scope by explicitly excluding legal `KBNvK` promotion traps. The broader `KBNvK` statement in version 1.x is false.
+
 ## Theorem
 
-Let `M` be the side with the mating material, and let `D` be the defending side. In every ongoing legal position in the material classes above:
+Let `M` be the side with the mating material, and let `D` be the defending side. In every legal position in the material classes above that is neither checkmate nor stalemate, and is outside the `KBNvK` promotion traps specified below:
 
 1.  If `M` is to move, then `M` has a helpmate.
 
@@ -15,19 +19,53 @@ Let `M` be the side with the mating material, and let `D` be the defending side.
 
 Equivalently, spelled out by colour:
 
+Both statements have the same exclusions for checkmate, stalemate, and the explicit `KBNvK` promotion traps.
+
 * White has the mating material: if White is to move, White has a helpmate; if Black is to move, White has a helpmate unless Black's only legal first moves are captures of one of White's pieces.
 
 * Black has the mating material: if Black is to move, Black has a helpmate; if White is to move, Black has a helpmate unless White's only legal first moves are captures of one of Black's pieces.
 
-### Ongoing legal positions
+### Terminal and dead positions
 
-The theorem applies only to ongoing legal positions. If the position is already checkmate or stalemate, the game has already ended and the helpmate-existence question is not applicable. Legal means that the position can arise from the initial chess position by a legal series of moves. There are a few illegal positions to which the theorem does not apply. These illegal positions are provided and are determined as illegal by machine-checkable algorithms.
+Legal here concerns board reachability from the initial position by ordinary legal moves (the movement and king-safety rules of Article 3). Checkmates and stalemates are excluded. The tables use “ongoing” only as a structural count: neither checkmate nor stalemate. This does not assert that a game may continue after a dead position, or past other game-ending rules.
+
+A legal position can also be dead: neither side can reach checkmate by any legal continuation. Such a position immediately ends the game under [FIDE Article 5.2.2](https://handbook.fide.com/chapter/E012023). The promotion traps below are dead positions even though legal moves remain. Excluding all dead positions by definition would make the bare-king helpmate claim circular, so the theorem instead gives explicit, testable exclusions. “Helpmate” means cooperative reachability of mate, not a forced win against best defence.
+
+### KBNvK promotion traps
+
+With White holding the bishop and knight, exclude these exact placements (all other squares empty):
+
+| Side to move | White king | White bishop | White knight | Black king |
+| --- | --- | --- | --- | --- |
+| White | `f7` | `g8` | one of `e8`, `e6`, `f5`, `h5` | `h8` |
+| Black | `f7` | `g8` | `f5` | `h7` |
+
+Also exclude their reflections across files: White king `c7`, bishop `b8`, knight respectively `d8`, `d6`, `c5`, `a5`, and Black king `a8` (White to move), or knight `c5` and Black king `a7` (Black to move). This gives eight White-to-move and two Black-to-move traps, including both bishop colours. For Black holding the material, reverse colours and reflect ranks, putting Black's promotion square on rank 1.
+
+These are exceptions based on the current placement and side to move; no promotion-history flag is needed. A bishop on rank 8 alone is not an exception. In particular the analogous White-to-move placement with knight `g7` is illegal: the knight blocks the pawn's `g7` promotion source, while `f7` and `h7` are occupied in the required predecessor.
+
+The supplied example is:
+
+```pgn
+[Variant "From Position"]
+[FEN "4N3/5KPk/8/8/8/8/8/8 w - - 0 1"]
+
+1. g8=B+ Kh8
+```
+
+After `g8=B+`, Black can also choose `Kh6`; the cooperative line `Kh6 Bh7 Kh5 Nd6 Kh6 Kf6 Kh5 Bg6+ Kh6 Nf7#` reaches mate. After `Kh8`, White has no helpmate. Moving the bishop to `h7` forces its capture; moving the knight leaves Black without a legal move; moving the king either stalemates Black or allows only capture of the bishop. The final position is legal and dead.
+
+[![Promotion trap after Kh8](assets/boards/kbnvk-promotion-wtm.svg)](https://lichess.org/analysis/standard/4N1Bk/5K2/8/8/8/8/8/8_w_-_-_0_1)
+
+For the Black-to-move trap, start instead with `8/5KPk/8/5N2/8/8/8/8 w - - 0 1` and play `g8=B+`. Black has the noncapturing move `Kh8`, but no continuation to mate. This is already a dead position at promotion. `Kh8` reaches the White-to-move `Nf5` trap in the ordinary legal-move graph, but an actual game has already ended and must not continue. The analogous distinction applies to the file-reflected `Nc5` trap. The other six White-to-move traps, including the supplied `Ne8` example, can first become dead on the king's move. All ten placements are explicitly excluded so the statement is safe for both board-graph analysis and actual game adjudication.
+
+`TestKbnPromotionExceptions` replays ordinary legal move sequences from the initial position for all ten trap placements and independently searches their forward continuations with Ashlar's ordinary legal move generator. It explicitly documents the already-ended predecessor of the White-to-move `Nf5`/`Nc5` cases. The seed games are in `src/test/resources/proof-games/KNPvK-*-pawn.pgn`.
 
 ### Finite-state proof
 
-The computation is performed with White as `M` for the seven material classes listed above. The corresponding Black-side statements follow by colour symmetry of chess. Swapping White and Black preserves legal moves, captures, checkmate, and helpmate existence.
+The computation is performed with White as `M` for the seven material classes listed above. The corresponding Black-side statements follow by reversing colours and reflecting ranks in the forward move graph and local illegality arguments. This preserves pawn direction, promotion, legal moves, captures, checkmate, and helpmate existence; Black's promotion rank is then rank 1.
 
-The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop case is obtained by board symmetry, so the light-square computation is sufficient.
+The finite-state proof by code covers the light-square bishop case for `KBNvK` and `KRvKB`. The dark-square bishop reachability computation follows by board symmetry of the pawn-free forward graph. Historical legality does not follow by arbitrary board symmetry: a rotation can turn an impossible bishop arrival into a legal promotion. The `KBNvK` illegality audit therefore expands all eight orientations and checks both bishop colours separately.
 
 ### Supplementary two-major check
 
@@ -79,23 +117,23 @@ The FIDE laws of chess call a position which cannot arise from the starting posi
 
 ### Potentially legal position
 
-When putting pieces on the board, one usually only checks that the king of the player not having the move is not in check. We call such a position a "potentially legal position". In most cases, such a potentially legal position is also a legal position. This is however not generally the case, there are potentially legal positions which are illegal. Later an example relevant to the theorem of KBNvK is given.
+Within the exact material class, the computation requires distinct occupied squares, nonadjacent kings, and that the king of the player not having the move is not in check. We call such a position a "potentially legal position". This is not a historical legality test: some such positions cannot arise from the initial position.
 
 ### Representative position
 
-A position can have up to eight symmetric positions by mirroring and rotation. We call one chosen member of such a symmetry class a "representative position". Counts below are given both for all positions and for positions reduced to one representative per symmetry class.
+A position can have up to eight symmetric positions by mirroring and rotation. We call one chosen member of such a symmetry class a "representative position". Counts below are given both for all positions and for positions reduced to one representative per symmetry class. These symmetries preserve pawn-free forward moves and helpmate existence, but a representative's historical illegality must not be transferred to its whole orbit without checking promotion in each orientation.
 
-## Illegal positions not satisfying the conclusion
+## Positions not satisfying the unqualified conclusion
 
-The finite-state proof checks the theorem for all potentially legal positions. If the theorem holds, that is fine. We must not determine if it is legal or illegal. If it is illegal the check just proves more than it must, which is not a problem. If the theorem does not hold for a potentially legal position, we must however show that the position is illegal. The following shows representatives for the potentially legal positions where the theorem does not hold and shows that they are illegal.
+The finite-state computation checks all potentially legal positions. A witnessed helpmate needs no historical legality decision. Every unwinnable position must instead be covered by an explicit exception or a sufficient illegality certificate. The original argument incorrectly classified all `KBNvK` failures as illegal; promotion produces the legal traps above.
 
-For each such representative we give the chess reason in text and also check the reason mechanically in the tests. These machine-checkable algorithms are not creating a proof game. They formalize the human-checkable arguments by checking the last move that the position must be illegal, and so make these arguments verifiable by code.
+For the remaining failures, the certificates formalize last-move or last-two-move arguments. Returning false means only that the certificate cannot prove illegality; it does not establish global legality. Proof games establish legality for the explicit promotion exceptions.
 
 The board diagrams below are generated locally by `scripts/render_readme_boards.py` using `python-chess`. They use the Colin M. L. Burnett SVG chess pieces and include rank and file coordinates. The Lichess links are kept only as analysis-board links.
 
 ### White to move
 
-The following are the potentially legal positions which do not satisfy the conclusion for White to move. A manual analysis proves all of them to be illegal.
+The following representatives do not satisfy the unqualified conclusion for White to move. Each is illegal in its displayed orientation. Some `KBNvK` representatives have legal promotion-trap orientations; those are excluded explicitly above.
 
 #### KBBvK, opposite bishops
 
@@ -127,37 +165,41 @@ These three representatives are illegal. Since White is to move and Black has on
 | 14 | `KBNvK`, light bishop | White | [![8/8/8/8/N7/8/2K5/kB6 w - - 0 1](assets/boards/kbnvk-light-wtm-14.svg)](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1)<br>`8/8/8/8/N7/8/2K5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/N7/8/2K5/kB6_w_-_-_0_1) | illegal position |
 | 15 | `KBNvK`, light bishop | White | [![8/8/8/8/8/8/1NK5/kB6 w - - 0 1](assets/boards/kbnvk-light-wtm-15.svg)](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1)<br>`8/8/8/8/8/8/1NK5/kB6 w - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/8/8/1NK5/kB6_w_-_-_0_1) | illegal position |
 
-These representatives are illegal by the same last-move idea. For the rows with a bishop on `a2`, a black king coming from `a2` is impossible because `a2` is occupied. For the rows with a bishop on `b1`, `b1` is occupied, `b2` is adjacent to the white king, and `a2` is attacked by the bishop. Hence again there is no legal black last move and the position must be illegal. Board symmetries preserve these arguments.
+For rows with a bishop on `a2`, all possible black-king source squares are occupied or adjacent to the white king, so no last king move is possible. For rows with a bishop on `b1`, Black could have moved from `a2` out of check to `a1`: being attacked on the source square is not an illegality reason. Instead examine the preceding White move. The bishop on `b1` gives adjacent check to the king on `a2`, cannot have arrived along either blocked diagonal, and cannot have promoted on rank 1. That predecessor is illegal, even if Black's king move captured a white piece on `a1`. Thus these displayed positions are illegal by a two-move argument. This reasoning is rechecked in each orientation; rotations onto rank 8 can admit promotion.
 
 #### Machine-checkable illegality algorithm
 
 1. Black made the last move, because White is to move.
 2. Black has only a king in `KBBvK` and `KBNvK`, so Black's last move must have been a king move.
 3. The algorithm enumerates every adjacent source square of the current black king square.
-4. A source square is rejected if it is occupied now, adjacent to the white king, or still attacked by White even when the current black-king square is treated as a possible capture blocker.
+4. A source square is rejected if it is occupied now or adjacent to the white king. A check on the source square is allowed: the king may have moved out of check.
 5. If every adjacent source square is rejected, then there is no possible last black king move, so the position is illegal.
+6. If sources remain, the two-move certificate reconstructs each predecessor, both without a capture and with a conservative neutral blocker on the capture square, and checks whether White could have produced the preceding adjacent check. It rejects a position only if every predecessor is impossible.
 
 ### Black to move
 
 #### KBNvK, light bishop
 
-The `KBNvK` case shows why a pure hand proof is dangerous. Here the theorem holds for all potentially legal positions except four, which are symmetric and represented by the position below: Black is not forced to capture a white piece on the first move, but White then cannot avoid the stalemate. However it is shown that this position is illegal, so the theorem holds.
+There are four light-bishop Black-to-move failures outside checkmate, stalemate, and forced first capture. They form one orbit in the pawn-free graph. Three are illegal; the orientation with bishop `g8`, king `f7`, knight `f5`, and black king `h7` is a legal promotion trap. The representative below is illegal only in its displayed orientation.
 
 | No. | Material class | Side to move | Representative position | Status |
 | --- | --- | --- | --- | --- |
 | 1 | `KBNvK(light bishop)` | Black | [![8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1](assets/boards/kbnvk-light-btm-1.svg)](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1)<br>`8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1`<br>[Lichess analysis](https://lichess.org/analysis/standard/8/8/8/8/2N5/8/k1K5/1B6_b_-_-_0_1) | illegal position |
 
-As mentioned this is not a counterexample. The catch is that this position is illegal. Black is in check from the bishop on `b1`. If the position had arisen in a legal game, White's last move would have had to create that check. But the bishop cannot have moved to `b1`: the diagonal squares from which it could have arrived are blocked by the black king on `a2` and the white king on `c2`. Nor can the check have been discovered, because the bishop is already adjacent to the black king with no intervening square. So the position cannot arise from the normal starting position, it is illegal, and the conclusions remain applicable.
+Black is in adjacent check from the bishop on `b1`. White must have created that check, but neither an ordinary bishop move along the blocked diagonals nor a discovered check is possible. White cannot promote on `b1`, so this displayed placement is illegal. Its rank-8 orientation permits `g8=B+`, invalidating the former claim that the whole orbit was illegal.
 
 #### Machine-checkable illegality algorithm
 
 1. White made the last move, because Black is to move.
-2. Black is in check, so White's last move must either move a checking piece to its current square or uncover a discovered check.
-3. The algorithm verifies that there is a single checking white piece and that this piece is adjacent to the black king.
+2. Black is in check, so White's last move must have created a check by a piece move, promotion, castling, or discovery.
+3. The algorithm looks for an adjacent checking white sliding piece. Even if another piece also checks, this particular adjacent check must have been created.
 4. Because the checker is adjacent to the king, no discovered check is possible: there is no square between checker and king from which a blocker could have moved away.
-5. Therefore the checking piece itself must have moved to its present square.
+5. Therefore the checking piece must have moved to its present square or been created there by promotion. A conservative guard also allows a rook's possible castling arrival.
 6. The algorithm enumerates that checking piece's possible source squares.
-7. If every source ray is blocked immediately, then the checking piece has no possible source square, so the position is illegal.
+7. If ordinary source rays are blocked, the algorithm checks rank-8 pawn origins for both straight and capture promotion. A capture predecessor restores a black blocker on the promotion square. Black must not already have been in check before White moved. If any promotion predecessor survives, the certificate does not claim illegality.
+8. Only when all supported arrivals are impossible does the certificate prove illegality. This is a sufficient certificate, not a complete retrograde legality solver.
+
+The audit also checked captures that change material, capture promotions, discovered and double checks, castling, and en passant. A last black king move may capture an extra white piece, so the two-move certificate allows a capture blocker. Black having only a king rules out Black's last move being castling, promotion, or en passant. An adjacent sliding check has no intervening square for an ordinary or en passant discovered check. Castling is guarded conservatively in the generic sliding-piece certificate. The `KBBvK` failures still have no possible last king move in any orientation; the other material classes have no unaccounted potentially legal failures in the existing computations.
 
 ## Verification
 
@@ -183,8 +225,6 @@ mvn test
 
 ```
 
-On the current development machine, the full test suite took roughly 2 minutes 25 seconds in the latest clean run.
-
 ## Current Position Counts for White to move
 
 "Maximum helpmate plies" is the largest number of legal plies in the stored helpmate path to checkmate inside the fixed material class.
@@ -196,12 +236,12 @@ On the current development machine, the full test suite took roughly 2 minutes 2
 | `KRvK` | 175,168 | 0 | 0 | 0 | 13 |
 | `KQvK` | 144,508 | 0 | 0 | 0 | 13 |
 | `KBBvK`, opposite bishops | 2,504,128 | 0 | 0 | 24 illegal | 15 |
-| `KBNvK`, light bishop | 5,437,752 | 0 | 0 | 60 illegal | 15 |
+| `KBNvK`, light bishop | 5,437,752 | 0 | 0 | 56 illegal, 4 legal promotion traps | 15 |
 | `KNNvK` | 5,749,652 | 0 | 0 | 0 | 15 |
 | `KRvKB(light bishop)` | 5,390,364 | 0 | 0 | 0 | 13 |
 | `KRvKN` | 10,780,728 | 8 | 0 | 0 | 13 |
 
-The nonzero white-to-move counterexample rows are the potentially legal positions where the theorem does not hold. The representative cases are illegal by a last-move black-king argument, so they are not exceptions to the strict-game statement. 
+The nonzero rows count failures of the former unqualified conclusion. `KBBvK` failures are all illegal. For the light-bishop `KBNvK` computation, 56 failures are illegal and four are legal promotion traps; the dark-bishop case has the same split. Historical legality is audited in every orientation, not inferred from representative counts.
 
 ### Potentially legal positions reduced to representative cases
 
@@ -210,7 +250,7 @@ The nonzero white-to-move counterexample rows are the potentially legal position
 | `KRvK` | 21,959 | 0 | 0 | 0 | 13 |
 | `KQvK` | 18,081 | 0 | 0 | 0 | 13 |
 | `KBBvK`, opposite bishops | 626,032 | 0 | 0 | 3 illegal | 15 |
-| `KBNvK`, light bishop | 1,359,578 | 0 | 0 | 15 illegal | 15 |
+| `KBNvK`, light bishop | 1,359,578 | 0 | 0 | 15 shapes; 4 contain legal promotion traps | 15 |
 | `KNNvK` | 719,130 | 0 | 0 | 0 | 15 |
 | `KRvKB(light bishop)` | 1,347,906 | 0 | 0 | 0 | 13 |
 | `KRvKN` | 1,347,906 | 1 | 0 | 0 | 13 |
@@ -226,7 +266,7 @@ The forced first capture exception is split by the total number of legal moves a
 | `KRvK` | 223,944 | 216 | 68 | 412 | 0 | 0 | 14 |
 | `KQvK` | 223,944 | 364 | 872 | 2,420 | 0 | 0 | 14 |
 | `KBBvK`, opposite bishops | 3,469,344 | 1,552 | 5,320 | 7,312 | 640 | 0 | 16 |
-| `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,042 | 432 | 4, 1 representative, illegal | 16 |
+| `KBNvK`, light bishop | 6,830,292 | 232 | 6,444 | 4,042 | 432 | 3 illegal, 1 legal promotion trap | 16 |
 | `KNNvK` | 6,830,292 | 120 | 3,864 | 1,708 | 124 | 0 | 16 |
 | `KRvKB(light bishop)` | 5,916,232 | 3,264 | 48 | 3,152 | 588 | 0 | 14 |
 | `KRvKN` | 12,535,256 | 9,328 | 48 | 6,848 | 320 | 0 | 14 |
@@ -238,7 +278,7 @@ The forced first capture exception is split by the total number of legal moves a
 | `KRvK` | 28,056 | 27 | 9 | 54 | 0 | 0 | 14 |
 | `KQvK` | 28,056 | 46 | 109 | 305 | 0 | 0 | 14 |
 | `KBBvK`, opposite bishops | 867,336 | 194 | 665 | 914 | 80 | 0 | 16 |
-| `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,013 | 108 | 1 illegal | 16 |
+| `KBNvK`, light bishop | 1,707,888 | 58 | 1,611 | 1,013 | 108 | 1 shape containing a legal promotion trap | 16 |
 | `KNNvK` | 854,238 | 15 | 484 | 216 | 16 | 0 | 16 |
 | `KRvKB(light bishop)` | 1,479,198 | 816 | 12 | 788 | 147 | 0 | 14 |
 | `KRvKN` | 1,567,222 | 1,166 | 6 | 856 | 40 | 0 | 14 |

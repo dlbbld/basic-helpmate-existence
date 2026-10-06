@@ -18,6 +18,10 @@ OUTPUT_DIR = ROOT / "assets" / "boards"
 
 DIAGRAMS = [
     (
+        "kbnvk-promotion-wtm.svg",
+        "4N1Bk/5K2/8/8/8/8/8/8 w - - 0 1",
+    ),
+    (
         "kbbvk-opposite-1.svg",
         "8/8/8/8/8/B7/B7/k1K5 w - - 0 1",
     ),

@@ -411,6 +411,15 @@ final class BasicLightBishopKnightHelpmateAnalysis {
     return result;
   }
 
+  // Forward pawn-free reachability is symmetric; strict historical legality is not.
+  static NavigableSet<LightBishopKnightState> symmetryOrbit(LightBishopKnightState state) {
+    final NavigableSet<LightBishopKnightState> result = new TreeSet<>();
+    for (var index = 0; index < 8; index++) {
+      result.add(transform(state, index));
+    }
+    return Collections.unmodifiableNavigableSet(result);
+  }
+
   private static LightBishopKnightState transform(LightBishopKnightState state, int transformIndex) {
     return new LightBishopKnightState(transform(state.whiteKing(), transformIndex),
         transform(state.whiteBishop(), transformIndex), transform(state.whiteKnight(), transformIndex),
@@ -427,6 +436,14 @@ final class BasicLightBishopKnightHelpmateAnalysis {
         transformedFile = file;
         transformedRank = rank;
       }
+      case 1 -> {
+        transformedFile = 7 - file;
+        transformedRank = rank;
+      }
+      case 2 -> {
+        transformedFile = file;
+        transformedRank = 7 - rank;
+      }
       case 3 -> {
         transformedFile = 7 - file;
         transformedRank = 7 - rank;
@@ -434,6 +451,14 @@ final class BasicLightBishopKnightHelpmateAnalysis {
       case 4 -> {
         transformedFile = rank;
         transformedRank = file;
+      }
+      case 5 -> {
+        transformedFile = 7 - rank;
+        transformedRank = file;
+      }
+      case 6 -> {
+        transformedFile = rank;
+        transformedRank = 7 - file;
       }
       case 7 -> {
         transformedFile = 7 - rank;
@@ -444,7 +469,7 @@ final class BasicLightBishopKnightHelpmateAnalysis {
     return Square.REAL.get(transformedRank * 8 + transformedFile);
   }
 
-  private static String toFen(LightBishopKnightState state) {
+  static String toFen(LightBishopKnightState state) {
     final char[] board = new char[64];
     for (int i = 0; i < board.length; i++) {
       board[i] = '1';

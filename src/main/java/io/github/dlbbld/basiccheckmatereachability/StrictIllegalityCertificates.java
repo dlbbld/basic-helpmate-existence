@@ -6,6 +6,10 @@ import java.util.List;
 import io.github.dlbbld.ashlarchess.board.enums.Side;
 import io.github.dlbbld.ashlarchess.board.enums.Square;
 
+/**
+ * Sufficient historical illegality certificates for structurally valid placements.
+ * False means inconclusive, not a proof of legality. White is the attacking side.
+ */
 final class StrictIllegalityCertificates {
 
   private static final int[][] KING_DELTAS = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 },
@@ -22,7 +26,7 @@ final class StrictIllegalityCertificates {
   }
 
   static boolean noPossibleLastBlackKingMove(Position position) {
-    if (position.sideToMove() != Side.WHITE) {
+    if (position.sideToMove() != Side.WHITE || !position.hasOnlyBlackKing()) {
       return false;
     }
 
@@ -33,9 +37,8 @@ final class StrictIllegalityCertificates {
       if (source == -1 || position.isOccupied(source) || areAdjacent(source, whiteKing)) {
         continue;
       }
-      if (!position.isAttackedByWhite(source, blackKing)) {
-        return false;
-      }
+      // A king may move OUT of check. Only king adjacency rules out this source.
+      return false;
     }
     return true;
   }
@@ -45,17 +48,40 @@ final class StrictIllegalityCertificates {
       return false;
     }
 
-    final var attackers = position.whiteAttackersToBlackKing();
-    if (attackers.size() != 1) {
-      return false;
-    }
-
-    final var checker = attackers.get(0);
     final var blackKing = position.squareOf('k');
-    if (!isSlidingPiece(checker.fenChar()) || !areAdjacent(checker.square().ordinal(), blackKing)) {
+    for (final var checker : position.whiteAttackersToBlackKing()) {
+      if (isSlidingPiece(checker.fenChar()) && areAdjacent(checker.square().ordinal(), blackKing)
+          && !position.hasSourceSquareForSlidingPiece(checker)
+          && !position.hasPossibleLastPromotion(checker) && !position.mayHaveJustCastled(checker)) {
+        // This particular adjacent check cannot be discovered, even in double check.
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static boolean noPossibleLastTwoMoves(Position position) {
+    if (position.sideToMove() != Side.WHITE || !position.hasOnlyBlackKing()) {
       return false;
     }
-    return !position.hasSourceSquareForSlidingPiece(checker);
+    final var blackKing = position.squareOf('k');
+    final var whiteKing = position.squareOf('K');
+    for (final int[] delta : KING_DELTAS) {
+      final var source = offset(blackKing, delta);
+      if (source == -1 || position.isOccupied(source) || areAdjacent(source, whiteKing)) {
+        continue;
+      }
+      final var predecessor = position.replace(new Piece('k', Square.REAL.get(blackKing)),
+          new Piece('k', Square.REAL.get(source)), Side.BLACK);
+      // Also allow the king's last move to have captured a white piece. A neutral
+      // blocker is conservative: it can block rays without adding any checks.
+      if (!noPossibleLastAdjacentCheckingPieceMove(predecessor)
+          || !noPossibleLastAdjacentCheckingPieceMove(
+              predecessor.withPiece(new Piece('#', Square.REAL.get(blackKing))))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static Position position(Side sideToMove, Piece... pieces) {
@@ -142,6 +168,11 @@ final class StrictIllegalityCertificates {
       pieces = List.copyOf(pieces);
     }
 
+    boolean hasOnlyBlackKing() {
+      return pieces.stream().filter(piece -> Character.isLowerCase(piece.fenChar()))
+          .allMatch(piece -> piece.fenChar() == 'k');
+    }
+
     int squareOf(char fenChar) {
       for (final var piece : pieces) {
         if (piece.fenChar() == fenChar) {
@@ -154,17 +185,6 @@ final class StrictIllegalityCertificates {
     boolean isOccupied(int square) {
       for (final var piece : pieces) {
         if (piece.square().ordinal() == square) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    boolean isAttackedByWhite(int square, int forcedBlocker) {
-      final var withForcedBlocker = withPiece(new Piece('#', Square.REAL.get(forcedBlocker)));
-      for (final var piece : pieces) {
-        if (Character.isUpperCase(piece.fenChar())
-            && attacks(piece.fenChar(), piece.square().ordinal(), square, withForcedBlocker)) {
           return true;
         }
       }
@@ -187,14 +207,44 @@ final class StrictIllegalityCertificates {
 
       for (final int[] delta : deltas) {
         final var source = offset(piece.square().ordinal(), delta);
-        while (source != -1) {
-          if (isOccupied(source)) {
-            break;
-          }
+        if (source != -1 && !isOccupied(source)) {
           return true;
         }
       }
       return false;
+    }
+
+    boolean hasPossibleLastPromotion(Piece checker) {
+      final var target = checker.square().ordinal();
+      if (rank(target) != 7 || !isSlidingPiece(checker.fenChar())) {
+        return false;
+      }
+      for (var fileDelta = -1; fileDelta <= 1; fileDelta++) {
+        final var source = offset(target, new int[] { fileDelta, -1 });
+        if (source == -1 || isOccupied(source)) {
+          continue;
+        }
+        var predecessor = replace(checker, new Piece('P', Square.REAL.get(source)), Side.WHITE);
+        if (fileDelta != 0) {
+          // Restore a captured black piece on the promotion square. Its type
+          // does not affect attacks BY White or the resulting position.
+          predecessor = predecessor.withPiece(new Piece('n', checker.square()));
+        }
+        if (predecessor.whiteAttackersToBlackKing().isEmpty()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    boolean mayHaveJustCastled(Piece checker) {
+      return checker.fenChar() == 'R'
+          && ((checker.square() == Square.F1 && squareOf('K') == Square.G1.ordinal())
+              || (checker.square() == Square.D1 && squareOf('K') == Square.C1.ordinal()));
+    }
+
+    private Position replace(Piece original, Piece replacement, Side side) {
+      return new Position(side, pieces.stream().map(piece -> piece.equals(original) ? replacement : piece).toList());
     }
 
     private Position withPiece(Piece extraPiece) {
