@@ -25,7 +25,10 @@ python -u scripts/verify_syzygy_position_sets.py --tablebase PATH_TO_SYZYGY_TABL
 
 - Scope: narrow the `KBNvK` theorem by explicitly excluding legal promotion traps,
   and correct the sufficient historical illegality certificates.
-- Release title: `2.0.0 — KBNvK Theorem Correction`.
+- GitHub release title: `2.0.0`.
+- Release-notes heading: `KBN versus K theorem correction`, following the
+  Ashlar Chess convention of a version-only GitHub title and a descriptive heading
+  inside the release notes.
 - Verification: Java 17 `mvn clean verify` passed all 32 tests with zero failures,
   errors, or skipped tests, and built the version 2.0.0 package.
 - Publication: [GitHub release 2.0.0](https://github.com/dlbbld/basic-helpmate-existence/releases/tag/2.0.0),
