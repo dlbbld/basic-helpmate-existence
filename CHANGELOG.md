@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 — KBNvK Theorem Correction — 2026-10-06
+## [2.0.0] - KBN versus K theorem correction - 2026-10-06
 
 This major release changes the theorem's meaning. Legal pawn promotion can produce
 `KBNvK` positions with no helpmate even though Black is not forced to capture on

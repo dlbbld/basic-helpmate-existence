@@ -1,6 +1,6 @@
 # Basic Helpmate Existence
 
-Current release: [2.0.0 — KBNvK Theorem Correction](CHANGELOG.md#200--kbnvk-theorem-correction--2026-10-06).
+Current release: [2.0.0 — KBN versus K theorem correction](CHANGELOG.md#200---kbn-versus-k-theorem-correction---2026-10-06).
 
 This project delivers a finite-state proof by code for basic helpmate existence in selected low-material chess endgames, with explicit forced-capture and `KBNvK` promotion-trap exceptions. It is supplemented by sufficient, machine-checkable last-move illegality certificates for the remaining positions where the conclusion does not hold.
 
