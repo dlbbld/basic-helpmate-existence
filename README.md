@@ -1,8 +1,12 @@
 # Basic Helpmate Existence
 
+Current release: [2.0.0 — KBNvK Theorem Correction](CHANGELOG.md#200--kbnvk-theorem-correction--2026-10-06).
+
 This project delivers a finite-state proof by code for basic helpmate existence in selected low-material chess endgames, with explicit forced-capture and `KBNvK` promotion-trap exceptions. It is supplemented by sufficient, machine-checkable last-move illegality certificates for the remaining positions where the conclusion does not hold.
 
 The covered material classes are `KRvK`, `KQvK`, `KBBvK` with opposite-coloured bishops, `KBNvK`, `KNNvK`, `KRvKB`, and `KRvKN`, together with their colour-reversed counterparts.
+
+Version 2.0 changes the theorem's scope by explicitly excluding legal `KBNvK` promotion traps. The broader `KBNvK` statement in version 1.x is false.
 
 ## Theorem
 
@@ -220,8 +224,6 @@ Run:
 mvn test
 
 ```
-
-On the current development machine, the full test suite took roughly 2 minutes 25 seconds in the latest clean run.
 
 ## Current Position Counts for White to move
 
