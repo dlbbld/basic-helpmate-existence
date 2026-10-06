@@ -49,6 +49,16 @@ public class GenerateWhiteToMoveReachabilitySummary {
         queen.unwinnableWhiteToMoveRepresentatives().size());
 
     final var lightBishopKnight = BasicLightBishopKnightHelpmateAnalysis.analyze();
+    final var kbnPromotionOrientations = new HashSet<BasicLightBishopKnightHelpmateAnalysis.LightBishopKnightState>();
+    var kbnPromotionShapes = 0;
+    for (final var representative : lightBishopKnight.unwinnableWhiteToMoveRepresentatives()) {
+      final var traps = BasicLightBishopKnightHelpmateAnalysis.symmetryOrbit(representative).stream()
+          .filter(state -> isLightSquare(state.whiteBishop())).filter(KbnPromotionExceptions::contains).toList();
+      kbnPromotionOrientations.addAll(traps);
+      if (!traps.isEmpty()) {
+        kbnPromotionShapes++;
+      }
+    }
     final var lightBishopKnightVerification = BasicLightBishopKnightHelpmateVerifier.verify();
     final var lightBishopKnightTerminals = whiteTerminalCountsKbnvK();
     print("KBNvK(light bishop)", lightBishopKnight.whiteToMoveStateCount(),
@@ -100,8 +110,10 @@ public class GenerateWhiteToMoveReachabilitySummary {
         oppositeBishops.unwinnableWhiteToMoveStateCount(), oppositeBishopsVerification.maximumWhiteToMoveDistance());
     printWhiteTableRow("KBNvK, light bishop", lightBishopKnight.whiteToMoveStateCount(),
         lightBishopKnightTerminals.checkmates(), lightBishopKnightTerminals.stalemates(),
-        lightBishopKnight.unwinnableWhiteToMoveStateCount(),
-        lightBishopKnightVerification.maximumWhiteToMoveDistance());
+        lightBishopKnightVerification.maximumWhiteToMoveDistance(),
+        String.format("%,d illegal, %,d legal promotion traps",
+            lightBishopKnight.unwinnableWhiteToMoveStateCount() - kbnPromotionOrientations.size(),
+            kbnPromotionOrientations.size()));
     printWhiteTableRow("KRvKB(light bishop)", rookLightBishop.whiteToMoveStateCount(),
         rookLightBishopTerminals.checkmates(), rookLightBishopTerminals.stalemates(),
         rookLightBishop.unwinnableWhiteToMoveStateCount(), rookLightBishopVerification.maximumWhiteToMoveDistance());
@@ -129,8 +141,9 @@ public class GenerateWhiteToMoveReachabilitySummary {
         oppositeBishopsVerification.maximumWhiteToMoveDistance());
     printWhiteTableRow("KBNvK, light bishop", 1359578, lightBishopKnightTerminals.checkmateRepresentatives(),
         lightBishopKnightTerminals.stalemateRepresentatives(),
-        lightBishopKnight.unwinnableWhiteToMoveRepresentatives().size(),
-        lightBishopKnightVerification.maximumWhiteToMoveDistance());
+        lightBishopKnightVerification.maximumWhiteToMoveDistance(),
+        String.format("%,d shapes; %,d contain legal promotion traps",
+            lightBishopKnight.unwinnableWhiteToMoveRepresentatives().size(), kbnPromotionShapes));
     printWhiteTableRow("KRvKB(light bishop)", 1347906, rookLightBishopTerminals.checkmateRepresentatives(),
         rookLightBishopTerminals.stalemateRepresentatives(),
         rookLightBishop.unwinnableWhiteToMoveRepresentatives().size(),
@@ -143,8 +156,10 @@ public class GenerateWhiteToMoveReachabilitySummary {
         twoKnightsVerification.maximumWhiteToMoveDistance());
 
     System.out.println();
-    System.out.println("Black-to-move local exception:");
-    printPositionRow("KBNvK(light bishop)", "8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1", "retro-illegal");
+    System.out.println("Black-to-move exception: audit each orientation separately:");
+    printPositionRow("KBNvK(light bishop)", "8/8/8/8/2N5/8/k1K5/1B6 b - - 0 1",
+        "illegal in displayed orientation; its orbit includes a legal promotion trap");
+    printPositionRow("KBNvK(light bishop)", "6B1/5K1k/8/5N2/8/8/8/8 b - - 0 1", "legal promotion trap");
 
     System.out.println();
     System.out.println("| Material class | Representative position | Strict-game status |");
@@ -153,7 +168,15 @@ public class GenerateWhiteToMoveReachabilitySummary {
     printOrderedPositionRows("KBBvK, opposite bishops", ORDERED_KBB_WHITE_TO_MOVE_EXCEPTIONS,
         toOppositeBishopsFenSet(oppositeBishops.unwinnableWhiteToMoveRepresentatives()), "retro-illegal");
     printOrderedPositionRows("KBNvK, light bishop", ORDERED_KBN_WHITE_TO_MOVE_EXCEPTIONS,
-        toLightBishopKnightFenSet(lightBishopKnight.unwinnableWhiteToMoveRepresentatives()), "retro-illegal");
+        toLightBishopKnightFenSet(lightBishopKnight.unwinnableWhiteToMoveRepresentatives()),
+        "illegal in displayed orientation; legality must be rechecked after symmetry");
+    for (final var representative : lightBishopKnight.unwinnableWhiteToMoveRepresentatives()) {
+      for (final var oriented : BasicLightBishopKnightHelpmateAnalysis.symmetryOrbit(representative)) {
+        if (KbnPromotionExceptions.contains(oriented)) {
+          printPositionRow("KBNvK", BasicLightBishopKnightHelpmateAnalysis.toFen(oriented), "legal promotion trap");
+        }
+      }
+    }
     for (final var state : rookLightBishop.unwinnableWhiteToMoveRepresentatives()) {
       printPositionRow("KRvKB(light bishop)", toFen(state), "unexpected local exception");
     }
@@ -178,8 +201,14 @@ public class GenerateWhiteToMoveReachabilitySummary {
 
   private static void printWhiteTableRow(String materialClass, int positions, int checkmates, int stalemates,
       int counterexamples, int maximumHelpmatePlies) {
+    printWhiteTableRow(materialClass, positions, checkmates, stalemates, maximumHelpmatePlies,
+        counterexamples == 0 ? "0" : String.format("%,d illegal", counterexamples));
+  }
+
+  private static void printWhiteTableRow(String materialClass, int positions, int checkmates, int stalemates,
+      int maximumHelpmatePlies, String failures) {
     System.out.printf("| `%s` | %,d | %,d | %,d | %s | %,d |%n", materialClass, positions, checkmates, stalemates,
-        counterexamples == 0 ? "0" : String.format("%,d illegal", counterexamples), maximumHelpmatePlies);
+        failures, maximumHelpmatePlies);
   }
 
   private static void printPositionRow(String materialClass, String fen, String strictGameStatus) {

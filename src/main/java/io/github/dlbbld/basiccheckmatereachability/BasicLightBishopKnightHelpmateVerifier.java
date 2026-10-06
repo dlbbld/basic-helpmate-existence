@@ -238,7 +238,13 @@ final class BasicLightBishopKnightHelpmateVerifier {
   private static int verifyTheoremRoots(BitSet legalStates, BitSet checkmates, BitSet winning) {
     var result = 0;
     for (var state = legalStates.nextSetBit(0); state >= 0; state = legalStates.nextSetBit(state + 1)) {
-      if (havingMove(state) != BLACK_TO_MOVE || checkmates.get(state)) {
+      if (checkmates.get(state)) {
+        continue;
+      }
+      if (havingMove(state) == WHITE_TO_MOVE) {
+        if (!winning.get(state)) {
+          verifyUnwinnableRoot(state);
+        }
         continue;
       }
       final var blackMoveMask = blackMoveMask(whiteKing(state), whiteBishop(state), whiteKnight(state),
@@ -251,11 +257,31 @@ final class BasicLightBishopKnightHelpmateVerifier {
         }
         continue;
       }
-      if (hasNonCaptureMove && winning.get(state)) {
-        result++;
+      if (hasNonCaptureMove) {
+        if (winning.get(state)) {
+          result++;
+        } else {
+          verifyUnwinnableRoot(state);
+        }
       }
     }
     return result;
+  }
+
+  private static void verifyUnwinnableRoot(int state) {
+    final var position = new BasicLightBishopKnightHelpmateAnalysis.LightBishopKnightState(
+        square(whiteKing(state)), square(whiteBishop(state)), square(whiteKnight(state)),
+        square(blackKing(state)), side(havingMove(state)));
+    if (KbnPromotionExceptions.contains(position)) {
+      return;
+    }
+    final var retroPosition = KbnPromotionExceptions.positionOf(position);
+    final var illegal = havingMove(state) == WHITE_TO_MOVE
+        ? StrictIllegalityCertificates.noPossibleLastTwoMoves(retroPosition)
+        : StrictIllegalityCertificates.noPossibleLastAdjacentCheckingPieceMove(retroPosition);
+    if (!illegal) {
+      throw new AssertionError("Unaccounted exception: " + BasicLightBishopKnightHelpmateAnalysis.toFen(position));
+    }
   }
 
   private static int maximumDistanceForHavingMove(BitSet winning, byte[] distanceByState, int havingMove) {
